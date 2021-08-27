@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
 
-chr = sys.argv[1]
+chr = int(sys.argv[1])
 
 os.chdir("/mnt/data1/Eilis/Projects/Asthma/ClassifyCellTypes/")
 

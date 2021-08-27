@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
-chr = sys.argv[1]
+chr = int(sys.argv[1])
 
 os.chdir("/mnt/data1/Eilis/Projects/Asthma/ClassifyCellTypes/")
 
@@ -49,7 +49,7 @@ while i < nsites:
 Y = np.repeat(np.arange(0,nCT), nobs)
 
 ## create empty array to append results to
-results = np.empty((0,15))
+results = np.empty((0,14))
 
 # for each site, iteratively add sites to predict until a max window size is hit
 site_index = 0
@@ -80,7 +80,7 @@ while site_index < nsites:
         specificity = np.array([sum((test_pred != x) & (Y != x))/(4*nobs) for x in np.arange(5)], dtype = float)
 		
 		# summarise performance
-        results = np.append(results, [np.append(np.append([chr, start, ncpg, ncpg, windowSize], n_correct/nobs), specificity)], axis=0)
+        results = np.append(results, [np.append(np.append([chr, start, ncpg, windowSize], n_correct/nobs), specificity)], axis=0)
         
         ## increase number of cpgs in predictor for next run
         ncpg += 1
