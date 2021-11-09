@@ -31,6 +31,11 @@ probeAnno = probeAnno[np.argsort(probeAnno[:, 7]),:]
 
 ctProbs = probeAnno[:,0:5] ## matrix of probability of being methylated by cell type
 
+## as sensitivity of array is poor at the extremes were meth level is estimated as >0.9 should be effectively 1, and <0.1, 0
+## change these values
+ctProbs = np.where(ctProbs > 0.9, 1, ctProbs)
+ctProbs = np.where(ctProbs < 0.1, 0, ctProbs)
+
 ## create bin test and training data used mean DNAm as probability a CpG is methylated for a particular read
 i = 0
 nsites, nCT = np.shape(ctProbs)
@@ -39,8 +44,8 @@ test_obs = np.empty((nsites, nCT*nobs), dtype = int)
 while i < nsites:
     j = 0
     while j < nCT:
-        train_obs[i,np.arange((j*nobs),(j*nobs)+nobs)] = np.random.choice(methStatus, nobs, ctProbs[i,j])
-        test_obs[i,np.arange((j*nobs),(j*nobs)+nobs)] = np.random.choice(methStatus, nobs, ctProbs[i,j])
+        train_obs[i,np.arange((j*nobs),(j*nobs)+nobs)] = np.random.choice(methStatus, nobs, p=[1-ctProbs[i,j],ctProbs[i,j]])
+        test_obs[i,np.arange((j*nobs),(j*nobs)+nobs)] = np.random.choice(methStatus, nobs, p=[1-ctProbs[i,j],ctProbs[i,j]])
         j +=1
     i +=1
 

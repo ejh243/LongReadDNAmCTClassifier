@@ -10,16 +10,16 @@ import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 
 chr = int(sys.argv[1])
+nobs = int(sys.argv[2]) # how many "single cell" observations to simulate per cell type
 
 os.chdir("/mnt/data1/Eilis/Projects/Asthma/ClassifyCellTypes/")
 
-
-pThres = 1 ## threshold to keep probes with signif diffs
-nobs = 100 # how many "single cell" observations to simulate per cell type
+pThres = 0.5 ## threshold to keep probes with signif diffs
 methStatus = (0,1) 
-celltypes = ("Bcell", "CD4Tcells", "CD8Tcell", "Mono", "Gran")
-max_window = 20000 # max distance between outer most cpgs in classifier
+max_window = 10000 # max distance between outer most cpgs in classifier
 min_cpg = 2 # number of cpgs in first classifer
+nCV = 15 # number of iterations to simulate cross validation
+
 
 
 probeAnno = pd.read_csv("TrainingData/rowanno_chr" + str(chr) + ".csv").values
@@ -28,23 +28,36 @@ probeAnno = pd.read_csv("TrainingData/rowanno_chr" + str(chr) + ".csv").values
 ## equivalent to excluding features that don't vary
 probeAnno = probeAnno[probeAnno[:,5] < pThres,:]
 
+
+
 ## sort by position
 probeAnno = probeAnno[np.argsort(probeAnno[:, 7]),:]
 
 ctProbs = probeAnno[:,0:5] ## matrix of probability of being methylated by cell type
 
+
+## as sensitivity of array is poor at the extremes were meth level is estimated as >0.9 should be effectively 1, and <0.1, 0
+## change these values
+ctProbs = np.where(ctProbs > 0.9, 1, ctProbs)
+ctProbs = np.where(ctProbs < 0.1, 0, ctProbs)
+
 ## create bin test and training data used mean DNAm as probability a CpG is methylated for a particular read
-i = 0
 nsites, nCT = np.shape(ctProbs)
-train_obs = np.empty((nsites, nCT*nobs), dtype = int)
-test_obs = np.empty((nsites, nCT*nobs), dtype = int)
-while i < nsites:
-    j = 0
-    while j < nCT:
-        train_obs[i,np.arange((j*nobs),(j*nobs)+nobs)] = np.random.choice(methStatus, nobs, ctProbs[i,j])
-        test_obs[i,np.arange((j*nobs),(j*nobs)+nobs)] = np.random.choice(methStatus, nobs, ctProbs[i,j])
-        j +=1
-    i +=1
+train_obs = np.empty((nsites, nCT*nobs, nCV), dtype = int)
+test_obs = np.empty((nsites, nCT*nobs, nCV), dtype = int)
+
+l = 0
+while l < nCV:
+    i = 0
+    while i < nsites:
+        j = 0
+        while j < nCT:
+            train_obs[i,np.arange((j*nobs),(j*nobs)+nobs),l] = np.random.choice(methStatus, nobs, p=[1-ctProbs[i,j],ctProbs[i,j]])
+            test_obs[i,np.arange((j*nobs),(j*nobs)+nobs),l] = np.random.choice(methStatus, nobs, p=[1-ctProbs[i,j],ctProbs[i,j]])
+            j +=1
+        i +=1
+    l += 1
+
 
 ## array of cell type labels (i.e. what we want to predict)
 Y = np.repeat(np.arange(0,nCT), nobs)
@@ -69,21 +82,24 @@ while site_index < nsites:
         windowSize = max_window
     ## check if addition of extra site increase span of predictors beyond max windowSize
     if(windowSize < max_window):
-        X = np.transpose(train_obs[site_index:(site_index+ncpg),:])
-		# define the model
-        model = KNeighborsClassifier(nCT)
-        model.fit = model.fit(X,Y) 
-        test_pred = model.predict(np.transpose(test_obs[site_index:(site_index+ncpg),:]))
-        bool_correct = np.equal(test_pred, Y)
-		
-		## count number correct for each cell type i.e. sensitivity
-        n_correct = np.array([sum(x) for x in np.split(bool_correct, nCT)], dtype = float)
-        
-        ## calculate specificity
-        specificity = np.array([sum((test_pred != x) & (Y != x))/(4*nobs) for x in np.arange(5)], dtype = float)
-		
-		# summarise performance
-        results = np.append(results, [np.append(np.append([chr, start, ncpg, windowSize], n_correct/nobs), specificity)], axis=0)
+        l = 0
+        ## run nCV times to get average performance
+        cvValues = np.empty((nCV, nCT*2))
+        while l < nCV:
+            X = np.transpose(train_obs[site_index:(site_index+ncpg),:,l])
+            model = KNeighborsClassifier(nCT)
+            model.fit = model.fit(X,Y) 
+            test_pred = model.predict(np.transpose(test_obs[site_index:(site_index+ncpg),:]))
+            bool_correct = np.equal(test_pred, Y)
+           ## count number correct for each cell type to caluclate sensitivity
+            cvValues[l,:nCT] = np.array([sum(x) for x in np.split(bool_correct, nCT)], dtype = float)/nobs
+            
+            ## calculate specificity
+            cvValues[l,nCT:] = np.array([sum((test_pred != x) & (Y != x))/(4*nobs) for x in np.arange(5)], dtype = float)
+            
+            l += 1
+        # summarise performance
+        results = np.append(results, [np.append([chr, start, ncpg, windowSize], cvValues.mean(0))], axis=0)
         
         ## increase number of cpgs in predictor for next run
         ncpg += 1
