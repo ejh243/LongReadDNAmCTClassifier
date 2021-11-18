@@ -15,8 +15,6 @@ nobs = int(sys.argv[2]) # how many "single cell" observations to simulate per ce
 
 os.chdir(workDir)
 
-chr = int(sys.argv[1]) ## provided from command line
-
 probeAnno = pd.read_csv(trainDataPath + "rowanno_chr" + str(chr) + ".csv").values
 
 np.random.seed(randomSeed) ## ensures that the sample random sampling occurs across algorithms and across reruns of the script
