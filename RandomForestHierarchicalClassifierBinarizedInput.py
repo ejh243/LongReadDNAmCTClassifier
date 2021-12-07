@@ -12,7 +12,7 @@ import os
 import pandas as pd
 import numpy as np
 from params import * # where params.py contains parameters
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
 
 chr = int(sys.argv[1]) 
@@ -92,10 +92,10 @@ while site_index < nsites:
         while l < nCV:
             X = np.transpose(train_obs[site_index:(site_index+ncpg),:,l])
             # define the models
-            model1 = KNeighborsClassifier(nCT)
-            model2 = KNeighborsClassifier(nCT)
-            model3 = KNeighborsClassifier(nCT)
-            model4 = KNeighborsClassifier(nCT)
+            model1 = RandomForestClassifier()
+            model2 = RandomForestClassifier()
+            model3 = RandomForestClassifier()
+            model4 = RandomForestClassifier()
             ## create empty array to record final predicted cell type for each test sample after following full hierarchical classification
             test_pred_final = np.array(["NA"]*nCT*nobs)
             ## Model 1 to separate lymphocytes (0) from non-lymphocytes (1)
@@ -171,4 +171,4 @@ while site_index < nsites:
         ncpg = min_cpg
 
 
-np.savetxt(resultsPath + "KNNHierarchicalBernoulliBinarizedChr" + str(chr) + "_" + str(nobs) + "obsCT.csv", results, delimiter=",")
+np.savetxt(resultsPath + "RandomForestHierarchicalBernoulliBinarizedChr" + str(chr) + "_" + str(nobs) + "obsCT.csv", results, delimiter=",")
