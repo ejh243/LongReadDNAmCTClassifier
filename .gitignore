@@ -1,0 +1,5 @@
+# all log files
+*.log
+
+# all profiling files
+mprof*
