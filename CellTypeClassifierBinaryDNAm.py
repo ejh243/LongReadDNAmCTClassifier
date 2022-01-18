@@ -46,10 +46,12 @@ nCT = probeAnno.shape[1]-3
 
 ## to speed up computation exclude sites with no evidence of cell type diffs from ANOVA
 ## equivalent to excluding features that don't vary
-probeAnno = probeAnno[probeAnno[:,nCT] < pThres,:]
+pvalCol = probeAnno.shape[1]-3
+probeAnno = probeAnno[probeAnno[:,pvalCol] < pThres,:]
 
 ## sort by position
-probeAnno = probeAnno[np.argsort(probeAnno[:, nCT+2]),:]
+posCol = probeAnno.shape[1]-1
+probeAnno = probeAnno[np.argsort(probeAnno[:,posCol]),:]
 ctProbs = probeAnno[:,0:nCT] ## matrix of probability of being methylated by cell type
 
 
@@ -90,10 +92,10 @@ ncpg = min_cpg
 
 while site_index < nsites:
     print("Running site: " + str(site_index + 1) + " of " + str(nsites))
-    start = probeAnno[site_index,nCT+2]
+    start = probeAnno[site_index,posCol]
     ## need catch for if size of classifier is greater than number of sites left on chr
     if( site_index+ncpg <= nsites):
-        stop = probeAnno[(site_index+ncpg-1),nCT+2]
+        stop = probeAnno[(site_index+ncpg-1),posCol]
         windowSize = stop - start
     else:
         windowSize = max_window
