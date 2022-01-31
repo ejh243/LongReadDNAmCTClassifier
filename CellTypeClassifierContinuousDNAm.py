@@ -2,12 +2,12 @@
 ## from contiguous sets of DNAm sites
 ## uses mean purified cell type DNAm levels in cell types as training data (i.e. continuous input)
 ## the following arguments are required on the command line in this order:
-## chromosome to analyse, 
-## choice of machine learning model, 
-## folder where DNAm and associated meta data  is located  
-## output folder are provided on the command line when script is executed
-## which column in the phenotype type contains the cell type classifications
-## there is also an accompanying params.py file which provides parameters to fine tune application
+## 1. chromosome to analyse, 
+## 2. choice of machine learning model, 
+## 3. folder where DNAm and associated meta data  is located  
+## 4. output folder are provided on the command line when script is executed
+## 5. which column in the phenotype type contains the cell type classifications
+## there is also an accompanying params.py file which provides parameters to fine tune the models
 
 import sys
 import os
