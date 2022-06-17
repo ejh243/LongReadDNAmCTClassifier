@@ -1,0 +1,60 @@
+name: cellclassifier
+channels:
+  - intel
+  - r
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=main
+  - _openmp_mutex=4.5=1_gnu
+  - bzip2=1.0.8=hb9a14ef_9
+  - ca-certificates=2021.10.8=ha878542_0
+  - certifi=2021.10.8=py39hf3d152e_1
+  - dpcpp-cpp-rt=2022.0.1=intel_3633
+  - dpcpp_cpp_rt=2022.0.1=intel_3633
+  - icc_rt=2022.0.1=intel_3633
+  - intel-cmplr-lib-rt=2022.0.1=intel_3633
+  - intel-cmplr-lic-rt=2022.0.1=intel_3633
+  - intel-opencl-rt=2022.0.1=intel_3633
+  - intel-openmp=2022.0.1=intel_3633
+  - intelpython=2022.0.0=0
+  - joblib=1.0.1=pyhd3eb1b0_0
+  - libblas=3.9.0=11_linux64_openblas
+  - libcblas=3.9.0=11_linux64_openblas
+  - libffi=3.3=14
+  - libgcc-ng=9.3.0=hdf63c60_101
+  - libgfortran-ng=9.3.0=ha5ec8a7_17
+  - libgfortran5=9.3.0=ha5ec8a7_17
+  - libgomp=9.3.0=h5101ec6_17
+  - liblapack=3.9.0=11_linux64_openblas
+  - libopenblas=0.3.17=pthreads_h8fe5266_1
+  - libstdcxx-ng=9.3.0=hdf63c60_101
+  - mkl=2022.0.1=intel_117
+  - mkl-service=2.4.0=py39h4119f30_10
+  - mkl_fft=1.3.1=py39h8344fd8_7
+  - mkl_random=1.2.2=py39h4ac99d2_7
+  - mkl_umath=0.1.1=py39h03fa629_17
+  - numpy=1.21.2=py39hec4e512_7
+  - numpy-base=1.21.2=py39h40791c5_7
+  - openssl=1.1.1l=h7f8727e_0
+  - pandas=1.2.3=py39hde0f152_0
+  - pip=21.2.4=py39h06a4308_0
+  - python=3.9.7=h718aa4a_4
+  - python-dateutil=2.8.2=pyhd8ed1ab_0
+  - python_abi=3.9=2_cp39
+  - pytz=2021.3=pyhd8ed1ab_0
+  - scikit-learn=1.0.1=py39h51133e4_0
+  - scipy=1.6.3=py39hee8e79c_0
+  - setuptools=58.0.4=py39h06a4308_0
+  - six=1.16.0=pyhd3eb1b0_0
+  - sqlite=3.36.0=hb9a14ef_3
+  - tbb=2021.5.0=intel_707
+  - tbb4py=2021.5.0=py39_intel_707
+  - threadpoolctl=2.2.0=pyh0d69192_0
+  - tk=8.6.10=h8e2d9d6_3
+  - wheel=0.37.0=pyhd3eb1b0_1
+  - xz=5.2.5=h74280d8_2
+  - zlib=1.2.11.1=h1e99aa7_5
+prefix: /lustre/home/ejh243/.conda/envs/cellclassifier
+
