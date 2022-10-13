@@ -52,14 +52,16 @@ allRows = []
 
 ## identify models with sufficinet accuracy
 col = ("SVM", "KNN", "NaiveBayes", "RandomForest", "BestAccuracy")
-for threshold in np.arange(0.7,1.00, 0.01):
+for threshold in np.arange(0.7,1.00, 0.02):
     print("Aggregating models with accuracy > " + str(threshold))
     for ml in col:
+        
         output = []
         output.append(ml)
         output.append(threshold)
         boolIndex = getattr(granges,ml) > threshold
         ## count number of models
+        #print("Aggregating " + str(sum(boolIndex)) + "" + col + " models.")
         output.append(sum(boolIndex))
         
         ## summarise length of models

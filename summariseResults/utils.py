@@ -2,12 +2,23 @@ import pandas as pd
 import numpy as np
 import pyranges as pr
 
-def loadResults(filename):
-    return pd.read_csv(filename, header = 0, names = ("Chr", "Position", "nCpG", "WindowSize", "MeanAccuracy", "SDAccuracy"))
+def loadResults(filename, mode="continuous", nCT=2):
+    if mode == "continuous":
+        return pd.read_csv(filename, header = 0, names = ("Chr", "Position", "nCpG", "WindowSize", "MeanAccuracy", "SDAccuracy"))
+    elif mode == "binary":
+        colnames = ["Chr", "Position", "nCpG", "WindowSize"] + ["CT" + str(i+1) + "_sensitivity" for i in range(0,int(nCT))] + ["CT" + str(i+1) + "_specificity" for i in range(0,int(nCT))]
+        return pd.read_csv(filename, header = 0, names = colnames)
+    else:
+        print("invalid mode specified")
 
 
 def cumSumAccuracy(data, bins):
 	return np.asarray(np.cumsum(np.flip(pd.cut(data, bins = bins).value_counts(sort = False))))
+
+def cumSumSensSpec(data, cols, bins):
+    minValue = data[cols].min(axis=1)
+    return np.asarray(np.cumsum(np.flip(pd.cut(minValue, bins = bins).value_counts(sort = False))))
+
 
 
 def gaps(granges):

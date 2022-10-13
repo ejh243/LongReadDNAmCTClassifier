@@ -11,7 +11,6 @@ import matplotlib.ticker as mticker
 # accuracy threshold
 thres = 0.8
 
-
 ## process command line information
 resultsPath = sys.argv[1]
 
@@ -33,7 +32,7 @@ allDat = {}
 for modelType in ["KNN", "NBayes", "RandFor", "SVM"]:
     subFiles = list(filter(lambda x:modelType in x, allFiles))
     print(str(len(subFiles)) + " files found for model type " + modelType)
-    allDat[modelType] = pd.concat(list(map(utils.loadResults, subFiles))).sort_values(by=["Chr", "Position", "nCpG"])
+    allDat[modelType] = pd.concat([utils.loadResults(x,"continuous") for x in subFiles]).sort_values(by=["Chr", "Position", "nCpG"])
     ## count
     print(str(len(allDat[modelType])) + " models loaded for model type " + modelType)
     ## add Density column
@@ -44,6 +43,8 @@ for modelType in ["KNN", "NBayes", "RandFor", "SVM"]:
 allDat[modelType]['nCpG'].describe()
 allDat[modelType]['WindowSize'].describe()
 allDat[modelType]['Density'].describe()
+
+minCpG = allDat[modelType].nCpG.min()
 
 ## assumes the same for all models
 fig1, (ax1, ax2, ax3) = plt.subplots(nrows=1,ncols=3)
@@ -133,13 +134,14 @@ fig4.savefig("Plots/BarchartNumberofPredictiveAlgorithmsContinuousClassifiers.pn
 ## summarise as a function of model characteristics
 fig5, (ax1,ax2, ax3) = plt.subplots(1,3)
 groupedCpG = allDat["KNN"].groupby(allDat["KNN"].nCpG).mean()
-ax1.plot(np.arange(2,max(allDat["KNN"]['nCpG'])+1,1), np.asarray(groupedCpG['MeanAccuracy']), label = "KNN")
+ax1.plot(np.arange(minCpG,max(allDat["KNN"]['nCpG'])+1,1), np.asarray(groupedCpG['MeanAccuracy']), label = "KNN")
+
 groupedCpG = allDat["NBayes"].groupby(allDat["NBayes"].nCpG).mean()
-ax1.plot(np.arange(2,max(allDat["NBayes"]['nCpG'])+1,1), np.asarray(groupedCpG['MeanAccuracy']), label = "Naive Bayes")
+ax1.plot(np.arange(minCpG,max(allDat["NBayes"]['nCpG'])+1,1), np.asarray(groupedCpG['MeanAccuracy']), label = "Naive Bayes")
 groupedCpG = allDat["RandFor"].groupby(allDat["RandFor"].nCpG).mean()
-ax1.plot(np.arange(2,max(allDat["RandFor"]['nCpG'])+1,1), np.asarray(groupedCpG['MeanAccuracy']), label = "Random Forest")
+ax1.plot(np.arange(minCpG,max(allDat["RandFor"]['nCpG'])+1,1), np.asarray(groupedCpG['MeanAccuracy']), label = "Random Forest")
 groupedCpG = allDat["SVM"].groupby(allDat["SVM"].nCpG).mean()
-ax1.plot(np.arange(2,max(allDat["SVM"]['nCpG'])+1,1), np.asarray(groupedCpG['MeanAccuracy']), label = "SVM")
+ax1.plot(np.arange(minCpG,max(allDat["SVM"]['nCpG'])+1,1), np.asarray(groupedCpG['MeanAccuracy']), label = "SVM")
 ax1.set_ylabel('Mean accuracy')  
 ax1.set_xlabel('Number of CpGs')  
 ax1.grid(True)
