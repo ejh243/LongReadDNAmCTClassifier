@@ -140,7 +140,7 @@ while site_index < nsites:
             cvValues[l,:nCT] = np.array([sum(x) for x in np.split(bool_correct, nCT)], dtype = float)/nobs
             
             ## calculate specificity
-            cvValues[l,nCT:] = np.array([sum((test_pred != x) & (Y != x))/(nCT*nobs) for x in np.arange(nCT)], dtype = float)
+            cvValues[l,nCT:] = np.array([sum((test_pred != x) & (Y != x))/((nCT-1)*nobs) for x in np.arange(nCT)], dtype = float)
             
             l += 1
         # summarise performance
