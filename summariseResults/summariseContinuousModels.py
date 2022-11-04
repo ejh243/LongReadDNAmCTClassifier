@@ -39,12 +39,15 @@ for modelType in ["KNN", "NBayes", "RandFor", "SVM"]:
     allDat[modelType]["Density"] = allDat[modelType]['WindowSize']/allDat[modelType]['nCpG']
 
 
+
 ## summarize the parameters of the models
 allDat[modelType]['nCpG'].describe()
 allDat[modelType]['WindowSize'].describe()
 allDat[modelType]['Density'].describe()
 
 minCpG = allDat[modelType].nCpG.min()
+maxWindow = allDat[modelType].WindowSize.max()
+maxDensity = allDat[modelType].Density.max()
 
 ## assumes the same for all models
 fig1, (ax1, ax2, ax3) = plt.subplots(nrows=1,ncols=3)
@@ -147,23 +150,23 @@ ax1.set_xlabel('Number of CpGs')
 ax1.grid(True)
 
 ## plot against window size
-spanBins = np.arange(0,10001,100)
+spanBins = np.arange(0,maxWindow+100,100)
 windowBins = pd.cut(allDat["KNN"]['WindowSize'], bins = spanBins)
 
 groupedSpan = allDat["KNN"].groupby(windowBins).mean()
-ax2.plot(np.arange(100,10001,100), np.asarray(groupedSpan['MeanAccuracy']), label = "KNN")
+ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['MeanAccuracy']), label = "KNN")
 groupedSpan = allDat["NBayes"].groupby(windowBins).mean()
-ax2.plot(np.arange(100,10001,100), np.asarray(groupedSpan['MeanAccuracy']), label = "Naive Bayes")
+ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['MeanAccuracy']), label = "Naive Bayes")
 groupedSpan = allDat["RandFor"].groupby(windowBins).mean()
-ax2.plot(np.arange(100,10001,100), np.asarray(groupedSpan['MeanAccuracy']), label = "Random Forest")
+ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['MeanAccuracy']), label = "Random Forest")
 groupedSpan = allDat["SVM"].groupby(windowBins).mean()
-ax2.plot(np.arange(100,10001,100), np.asarray(groupedSpan['MeanAccuracy']), label = "SVM")
+ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['MeanAccuracy']), label = "SVM")
  
 ax2.set_xlabel('Span of CpGs')  
 ax2.grid(True)
 
 ## plot against density
-densityBreaks = np.arange(0,5001,50)
+densityBreaks = np.arange(0,maxDensity+50,50)
 densityBins = pd.cut(allDat["KNN"]['Density'], bins = densityBreaks)
 
 groupedDensity = allDat["KNN"].groupby(densityBins).mean()
