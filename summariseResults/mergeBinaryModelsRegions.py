@@ -6,6 +6,9 @@ import numpy as np
 import pyranges as pr
 
 
+# model names
+modelOpts = ["KNN", "NBayes", "RandFor", "SVM"]
+
 ## process command line information
 resultsPath = sys.argv[1]
 nCT  = sys.argv[2]
@@ -17,41 +20,46 @@ allFiles = os.listdir()
 allFiles = list(filter(lambda x:'BinaryClassifier' in x, allFiles))
 
 
-allDat = {}
-
 ## load results
-for modelType in ["KNN", "NBayes", "RandFor", "SVM"]:
+modelMissing = []
+for modelType in modelOpts:
     subFiles = list(filter(lambda x:modelType in x, allFiles))
     print(str(len(subFiles)) + " files found for model type " + modelType)
-    allDat[modelType] = pd.concat([utils.loadResults(x,"binary", nCT) for x in subFiles]).sort_values(by=["Chr", "Position", "nCpG"])
-    ## count
-    print(str(len(allDat[modelType])) + " models loaded for model type " + modelType)
-    ## add Density column
-    allDat[modelType]["Density"] = allDat[modelType]['WindowSize']/allDat[modelType]['nCpG']
-    ## calc overall accuracy
-    sensCols = [col for col in allDat[modelType].columns if col.endswith('sensitivity')]
-    allDat[modelType]["Accuracy"] = allDat[modelType][sensCols].mean(1)
+    if len(subFiles) == 22:
+        allDat = pd.concat([utils.loadResults(x,"binary", nCT) for x in subFiles]).sort_values(by=["Chr", "Position", "nCpG"])
+        ## count
+        print(str(len(allDat)) + " models loaded for model type " + modelType)
+        ## add Density column
+        allDat["Density"] = allDat['WindowSize']/allDat['nCpG']
+        ## calc overall accuracy Only holds if cell types equal
+        sensCols = [col for col in allDat.columns if col.endswith('sensitivity')]
+        allDat["Accuracy"] = allDat[sensCols].mean(1)
+        
+        # check if pyranges object exists
+        var_exists = 'granges' in locals() or 'var' in globals()
+        if not var_exists:
+        ## create set of genomic regions
+            granges = pr.PyRanges(chromosomes = allDat["Chr"].astype("int"), starts = allDat["Position"], ends = allDat["Position"]+allDat["WindowSize"])
+            setattr(granges, "nCpG", allDat["nCpG"])
+        ## take minimum of sensitivity and specificity per model
+        for i in range(0,int(nCT)):
+            setattr(granges, modelType + "_CT" + str(i+1), allDat[["CT" + str(i+1) + "_sensitivity","CT" + str(i+1) + "_specificity"]].min(axis = 1))
+    else:
+        modelMissing = modelMissing.append(modelType)
 
+if modelMissing is not None and len(modelMissing) > 0:
+    modelOpts = [modelType for modelType in modelOpts if modelType not in modelMissing]
 
-
-## create set of genomic regions
-
-granges = pr.PyRanges(chromosomes = allDat["SVM"]["Chr"].astype("int"), starts = allDat["SVM"]["Position"], ends = allDat["SVM"]["Position"]+allDat["SVM"]["WindowSize"])
-## take minimum of sensitivity and specificity per model
-for modelType in ["KNN", "NBayes", "RandFor", "SVM"]:
-    for i in range(0,int(nCT)):
-       setattr(granges, modelType + "_CT" + str(i+1), allDat[modelType][["CT" + str(i+1) + "_sensitivity","CT" + str(i+1) + "_specificity"]].min(axis = 1))
-
-setattr(granges, "nCpG", allDat["SVM"]["nCpG"])
-
-
+del allDat
+ 
 ## how many genomic regions with reasonable sensitivity & specificity
 allRows = []
 
-## identify models with sufficinet accuracy
+## identify models with sufficient accuracy
 for threshold in np.arange(0.7,1.00, 0.02):
     print("Aggregating models with accuracy > " + str(threshold))
-    for ml in ["KNN", "NBayes", "RandFor", "SVM"]:
+    for ml in modelOpts:
+        print("Merging ML model:" + ml)
         for i in range(0,int(nCT)):
             ## if only 2 CT then only need to do once
             if int(nCT) > 2 or i != 1:
