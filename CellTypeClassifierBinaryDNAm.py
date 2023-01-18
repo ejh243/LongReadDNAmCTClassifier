@@ -50,6 +50,9 @@ betas = pd.read_csv(trainDataPath + "betas_chr" + str(chr) + ".csv").values
 pheno = pd.read_csv(trainDataPath + "colanno.csv").values
 probeAnno = pd.read_csv(trainDataPath + "rowanno_chr" + str(chr) + ".csv").values
 
+print("Phenotype data loaded for " + str(np.shape(pheno)[0]) + " samples")
+print("Beta values loaded for " + str(np.shape(betas)[1]) + " samples")
+
 
 ## array of cell type labels (i.e. what we want to predict)
 inputY = pheno[:,ctCol]
@@ -65,6 +68,8 @@ print("Found " + str(nCT) + " cell types to predict")
 
 print("Outcome is a " + type_of_target(inputY) + " variable")
 
+
+
 ## to speed up computation exclude sites with no evidence of cell type diffs from ANOVA
 ## equivalent to excluding features that don't vary
 pvalCol = probeAnno.shape[1]-3
@@ -77,6 +82,8 @@ betas = betas[np.argsort(probeAnno[:,posCol]),:]
 probeAnno = probeAnno[np.argsort(probeAnno[:,posCol]),:]
 
 nsites = np.shape(probeAnno)[0]
+
+print("Filtered to " + str(nsites) + " sites")
 
 ## caluclate mean DNAm level for each cell type
 ctProbs = pd.DataFrame(betas).groupby(inputY, axis = 'columns').mean() ## matrix of probability of being methylated by cell type
