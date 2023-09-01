@@ -45,7 +45,7 @@ for modelType in modelOpts:
         for i in range(0,int(nCT)):
             setattr(granges, modelType + "_CT" + str(i+1), allDat[["CT" + str(i+1) + "_sensitivity","CT" + str(i+1) + "_specificity"]].min(axis = 1))
     else:
-        modelMissing = modelMissing.append(modelType)
+        modelMissing.append(modelType)
 
 if modelMissing is not None and len(modelMissing) > 0:
     modelOpts = [modelType for modelType in modelOpts if modelType not in modelMissing]
@@ -103,8 +103,7 @@ for threshold in np.arange(0.7,1.00, 0.02):
                     ## how many regions with a single model?
                     output.append(sum(modelOverlaps.NumberOverlaps == 1))
                     
-                    ## within each region what is the minimum overlap?
-                    
+                    ## within each region what is the minimum overlap?               
                     minWindow = []
                     for i in range(len(regions)):
                         ## if only 1 model then minimum is the size of the region
@@ -115,11 +114,11 @@ for threshold in np.arange(0.7,1.00, 0.02):
                             start = modelOverlaps.Start.to_numpy()[i]
                             end = modelOverlaps.End.to_numpy()[i]
                             ## find smallest starting region 
-                            startIndex = (granges.Start == start) & (boolIndex)
+                            startIndex = (granges.Chromosome == chr) & (granges.Start == start) & (boolIndex)
                             startModel = granges[startIndex]
                             startSmall = min(startModel.End - startModel.Start)
                             ## find the smallest end region 
-                            endIndex = (granges.End <= end) & (boolIndex)
+                            endIndex = (granges.Chromosome == chr) & (granges.End == end) & (boolIndex)
                             endModel = granges[endIndex]
                             endSmall = min(endModel.End - endModel.Start)
                             ## take the maximum of these two values

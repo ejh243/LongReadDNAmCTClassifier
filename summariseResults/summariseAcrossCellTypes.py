@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
 # accuracy threshold
-thres = 0.8
+thres = 0.9
 
 ## process command line information
 modelType = sys.argv[1]
@@ -54,21 +54,21 @@ maxDensity = allDat[cellTypes[0]].Density.max()
 fig2, ax1 = plt.subplots()
 ax1.violinplot(pd.concat([allDat[x]['Accuracy'] for x in cellTypes], axis = 1, names = allDat.keys()),showextrema=True, showmedians=True)
 plt.xticks(np.array(range(len(allDat)))+1, allDat.keys())
-ax1.set(xlim = [0.5,4.5], ylim = [0,1], xlabel='Cell type', ylabel='Mean accuracy across CV')
+ax1.set(xlim = [0.5,nCT+0.5], ylim = [0,1], xlabel='Cell type', ylabel='Mean accuracy across CV')
 ax1.grid(True)
 fig2.savefig("Plots/ViolinplotAccuracyBinary" + modelType + "Classifiers.png", dpi=150)
 
 fig2, ax1 = plt.subplots()
 ax1.violinplot(pd.concat([allDat[x]['CT1_sensitivity'] for x in cellTypes], axis = 1, names = allDat.keys()),showextrema=True, showmedians=True)
 plt.xticks(np.array(range(len(allDat)))+1, allDat.keys())
-ax1.set(xlim = [0.5,4.5], ylim = [0,1], xlabel='Cell type', ylabel='Sensitivity across CV')
+ax1.set(xlim = [0.5,nCT+0.5], ylim = [0,1], xlabel='Cell type', ylabel='Sensitivity across CV')
 ax1.grid(True)
 fig2.savefig("Plots/ViolinplotSensitivityBinary" + modelType + "Classifiers.png", dpi=150)
 
 fig2, ax1 = plt.subplots()
 ax1.violinplot(pd.concat([allDat[x]['CT1_specificity'] for x in cellTypes], axis = 1, names = allDat.keys()),showextrema=True, showmedians=True)
 plt.xticks(np.array(range(len(allDat)))+1, allDat.keys())
-ax1.set(xlim = [0.5,4.5], ylim = [0,1], xlabel='Cell type', ylabel='Specificity across CV')
+ax1.set(xlim = [0.5,nCT+0.5], ylim = [0,1], xlabel='Cell type', ylabel='Specificity across CV')
 ax1.grid(True)
 fig2.savefig("Plots/ViolinplotSpecificityBinary" + modelType + "Classifiers.png", dpi=150)
 
@@ -83,7 +83,7 @@ axs.bar(x, countCT.sum(axis = 1).value_counts(sort=False).values, width)
 axs.set_ylabel('Number of models')
 axs.set_xlabel('Number of cell types')
 axs.set_xticks(x)
-fig3.savefig("Plots/BarchartNumberofCelltypesPredictedBinaryClassifiers.png", dpi=150)
+fig3.savefig("Plots/BarchartNumberofCelltypesPredictedBinary" + modelType + "Classifiers.png", dpi=150)
 
 
 ## cumulative number of specific and sensitive models

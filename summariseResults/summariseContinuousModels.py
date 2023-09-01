@@ -8,8 +8,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
+plt.rcParams.update({'font.size': 22})
+
+colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+
 # accuracy threshold
-thres = 0.8
+thres = 0.9
 
 ## process command line information
 resultsPath = sys.argv[1]
@@ -45,16 +49,23 @@ allDat[modelType]['nCpG'].describe()
 allDat[modelType]['WindowSize'].describe()
 allDat[modelType]['Density'].describe()
 
+## summarize the results of the models
+for modelType in ["KNN", "NBayes", "RandFor", "SVM"]:
+    print(str("Summary for model type " + modelType))
+    allDat[modelType]['MeanAccuracy'].describe()
+
+
 minCpG = allDat[modelType].nCpG.min()
 maxWindow = allDat[modelType].WindowSize.max()
 maxDensity = allDat[modelType].Density.max()
 
+
 ## assumes the same for all models
 fig1, (ax1, ax2, ax3) = plt.subplots(nrows=1,ncols=3)
-n1, bins1, patches1 = ax1.hist(allDat[modelType]['nCpG'], int(max(allDat[modelType]['nCpG']))-2, density=False, facecolor='g', alpha=0.75)
+n1, bins1, patches1 = ax1.hist(allDat[modelType]['nCpG'], int(max(allDat[modelType]['nCpG']))-2, density=False, facecolor='g')
 ## histogram of number of CpGs
 ax1.set(xlim = [2, max(allDat[modelType]['nCpG'])], ylim = [0, max(n1)], xlabel='Number of CpGs',
-ylabel='Number of models (x1000)')
+ylabel='Number of classifiers(x1000)')
 ax1.grid(True)
 y_vals = ax1.get_yticks().tolist()
 ax1.yaxis.set_major_locator(mticker.FixedLocator(y_vals))
@@ -83,10 +94,24 @@ fig1.savefig("Plots/HistogramModelCharacteristics.png", dpi=150)
 
 ## boxplot of accuracy statistics
 fig2, ax1 = plt.subplots()
-ax1.violinplot((allDat["KNN"]['MeanAccuracy'],allDat["NBayes"]['MeanAccuracy'],allDat["RandFor"]['MeanAccuracy'],allDat["SVM"]['MeanAccuracy']),showextrema=True, showmedians=True)
+vplots = ax1.violinplot((allDat["KNN"]['MeanAccuracy'],allDat["NBayes"]['MeanAccuracy'],allDat["RandFor"]['MeanAccuracy'],allDat["SVM"]['MeanAccuracy']),showextrema=True, showmedians=True)
+# Set the color of the violin patches
+colNum=0
+for pc in vplots['bodies']:
+    pc.set_facecolor("C" + str(colNum))
+    colNum+=1
+
+# Make all the violin statistics marks black:
+for partname in ('cbars','cmins','cmaxes','cmedians'):
+    vp = vplots[partname]
+    vp.set_edgecolor("black")
+    vp.set_linewidth(1)
+
+
 plt.xticks((1,2,3,4), ("KNN", "Naive Bayes", "Random Forest", "SVM"))
 ax1.set(xlim = [0.5,4.5], ylim = [0,1], xlabel='Algorithm', ylabel='Mean accuracy across CV')
 ax1.grid(True)
+ax1.legend()
 fig2.savefig("Plots/ViolinplotAccuracyContinuousClassifiers.png", dpi=150)
 
 
@@ -99,21 +124,42 @@ maxMean = mergeDf.max(1)
 mergeDf.idxmax(1).value_counts()
 mergeDf['best'] = maxMean
 
+mergeDf['best'].describe()
+
+fig2, ax1 = plt.subplots()
+vplots = ax1.violinplot((allDat["KNN"]['MeanAccuracy'],allDat["NBayes"]['MeanAccuracy'],allDat["RandFor"]['MeanAccuracy'],allDat["SVM"]['MeanAccuracy'], mergeDf['best']),showextrema=True, showmedians=True)
+plt.xticks((1,2,3,4,5), ("KNN", "Naive Bayes", "Random Forest", "SVM", "Best"))
+ax1.set(xlim = [0.5,5.5], ylim = [0,1], xlabel='Algorithm', ylabel='Mean accuracy')
+ax1.grid(True)
+# Set the color of the violin patches
+for pc, col in zip(vplots['bodies'], colors):
+    pc.set_facecolor(col)
+
+
+# Make all the violin statistics marks black:
+for partname in ('cbars','cmins','cmaxes','cmedians'):
+    vp = vplots[partname]
+    vp.set_edgecolor("black")
+    vp.set_linewidth(1)
+
+fig2.savefig("Plots/ViolinplotAccuracyContinuousClassifiersWithBest.png", dpi=150)
+
+
 
 ## count cumulative sum of number of models with accuracy > x.
 
-accuracyBins = np.arange(0,1.01,0.05)
+accuracyBins = np.arange(0,1.01,0.02)
 	
 cumSumTotals = mergeDf.apply(utils.cumSumAccuracy, axis=0, bins = accuracyBins)
 
 fig3, ax1 = plt.subplots()
-ax1.plot(np.flip(np.arange(0,1,0.05)), cumSumTotals['knn'], label = "KNN")
-ax1.plot(np.flip(np.arange(0,1,0.05)), cumSumTotals['naiveBayes'], label = "Naive Bayes")
-ax1.plot(np.flip(np.arange(0,1,0.05)), cumSumTotals['randomForest'], label = "Random Forest")
-ax1.plot(np.flip(np.arange(0,1,0.05)), cumSumTotals['svm'], label = "SVM")
-ax1.plot(np.flip(np.arange(0,1,0.05)), cumSumTotals['best'], label = "Best")
+ax1.plot(np.flip(np.arange(0,1,0.02)), cumSumTotals['knn'], label = "KNN")
+ax1.plot(np.flip(np.arange(0,1,0.02)), cumSumTotals['naiveBayes'], label = "Naive Bayes")
+ax1.plot(np.flip(np.arange(0,1,0.02)), cumSumTotals['randomForest'], label = "Random Forest")
+ax1.plot(np.flip(np.arange(0,1,0.02)), cumSumTotals['svm'], label = "SVM")
+ax1.plot(np.flip(np.arange(0,1,0.02)), cumSumTotals['best'], label = "Best")
 ax1.set_xlabel('Mean accuracy across CV')  # Add an x-label to the axes.
-ax1.set_ylabel('Number of models (x1000)')  # Add a y-label to the axes.
+ax1.set_ylabel('Number of classifiers(x1000)')  # Add a y-label to the axes.
 y_vals = ax1.get_yticks()
 ax1.yaxis.set_major_locator(mticker.FixedLocator(y_vals))
 ax1.set_yticklabels(['{:.0f}'.format(x / 1000) for x in y_vals])
@@ -128,7 +174,7 @@ width = 1  # the width of the bars
 axs.bar(x, (mergeDf.drop('best', axis = 1) > thres).sum(1).value_counts(sort=False).values, width)
 
 # Add some text for labels, title and custom x-axis tick labels, etc.
-axs.set_ylabel('Number of models')
+axs.set_ylabel('Number of classifiers')
 axs.set_xlabel('Number of algorithms')
 axs.set_xticks(x)
 fig4.savefig("Plots/BarchartNumberofPredictiveAlgorithmsContinuousClassifiers.png", dpi=150)
@@ -136,15 +182,15 @@ fig4.savefig("Plots/BarchartNumberofPredictiveAlgorithmsContinuousClassifiers.pn
 
 ## summarise as a function of model characteristics
 fig5, (ax1,ax2, ax3) = plt.subplots(1,3)
-groupedCpG = allDat["KNN"].groupby(allDat["KNN"].nCpG).mean()
-ax1.plot(np.arange(minCpG,max(allDat["KNN"]['nCpG'])+1,1), np.asarray(groupedCpG['MeanAccuracy']), label = "KNN")
 
-groupedCpG = allDat["NBayes"].groupby(allDat["NBayes"].nCpG).mean()
-ax1.plot(np.arange(minCpG,max(allDat["NBayes"]['nCpG'])+1,1), np.asarray(groupedCpG['MeanAccuracy']), label = "Naive Bayes")
-groupedCpG = allDat["RandFor"].groupby(allDat["RandFor"].nCpG).mean()
-ax1.plot(np.arange(minCpG,max(allDat["RandFor"]['nCpG'])+1,1), np.asarray(groupedCpG['MeanAccuracy']), label = "Random Forest")
-groupedCpG = allDat["SVM"].groupby(allDat["SVM"].nCpG).mean()
-ax1.plot(np.arange(minCpG,max(allDat["SVM"]['nCpG'])+1,1), np.asarray(groupedCpG['MeanAccuracy']), label = "SVM")
+groupedCpG = mergeDf.groupby(allDat["SVM"].nCpG).mean()
+maxCpG = max(allDat["NBayes"]['nCpG'])+1
+ax1.plot(np.arange(minCpG,maxCpG,1), np.asarray(groupedCpG['knn']), label = "KNN")
+ax1.plot(np.arange(minCpG,maxCpG,1), np.asarray(groupedCpG['naiveBayes']), label = "Naive Bayes")
+ax1.plot(np.arange(minCpG,maxCpG,1), np.asarray(groupedCpG['randomForest']), label = "Random Forest")
+ax1.plot(np.arange(minCpG,maxCpG,1), np.asarray(groupedCpG['svm']), label = "SVM")
+ax1.plot(np.arange(minCpG,maxCpG,1), np.asarray(groupedCpG['best']), label = "Best")
+
 ax1.set_ylabel('Mean accuracy')  
 ax1.set_xlabel('Number of CpGs')  
 ax1.grid(True)
@@ -153,14 +199,12 @@ ax1.grid(True)
 spanBins = np.arange(0,maxWindow+100,100)
 windowBins = pd.cut(allDat["KNN"]['WindowSize'], bins = spanBins)
 
-groupedSpan = allDat["KNN"].groupby(windowBins).mean()
-ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['MeanAccuracy']), label = "KNN")
-groupedSpan = allDat["NBayes"].groupby(windowBins).mean()
-ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['MeanAccuracy']), label = "Naive Bayes")
-groupedSpan = allDat["RandFor"].groupby(windowBins).mean()
-ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['MeanAccuracy']), label = "Random Forest")
-groupedSpan = allDat["SVM"].groupby(windowBins).mean()
-ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['MeanAccuracy']), label = "SVM")
+groupedSpan = mergeDf.groupby(windowBins).mean()
+ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['knn']), label = "KNN")
+ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['naiveBayes']), label = "Naive Bayes")
+ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['randomForest']), label = "Random Forest")
+ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['svm']), label = "SVM")
+ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['best']), label = "Best")
  
 ax2.set_xlabel('Span of CpGs')  
 ax2.grid(True)
@@ -169,14 +213,12 @@ ax2.grid(True)
 densityBreaks = np.arange(0,maxDensity+50,50)
 densityBins = pd.cut(allDat["KNN"]['Density'], bins = densityBreaks)
 
-groupedDensity = allDat["KNN"].groupby(densityBins).mean()
-ax3.plot(densityBreaks[1:], np.asarray(groupedDensity['MeanAccuracy']), label = "KNN")
-groupedDensity = allDat["NBayes"].groupby(densityBins).mean()
-ax3.plot(densityBreaks[1:], np.asarray(groupedDensity['MeanAccuracy']), label = "Naive Bayes")
-groupedDensity = allDat["RandFor"].groupby(densityBins).mean()
-ax3.plot(densityBreaks[1:], np.asarray(groupedDensity['MeanAccuracy']), label = "Random Forest")
-groupedDensity = allDat["SVM"].groupby(densityBins).mean()
-ax3.plot(densityBreaks[1:], np.asarray(groupedDensity['MeanAccuracy']), label = "SVM")
+groupedDensity = mergeDf.groupby(densityBins).mean()
+ax3.plot(densityBreaks[1:], np.asarray(groupedDensity['knn']), label = "KNN")
+ax3.plot(densityBreaks[1:], np.asarray(groupedDensity['naiveBayes']), label = "Naive Bayes")
+ax3.plot(densityBreaks[1:], np.asarray(groupedDensity['randomForest']), label = "Random Forest")
+ax3.plot(densityBreaks[1:], np.asarray(groupedDensity['svm']), label = "SVM")
+ax3.plot(densityBreaks[1:], np.asarray(groupedDensity['best']), label = "Best")
 
 ax3.set_xlabel('Density of CpGs')  
 ax3.legend()
@@ -184,6 +226,33 @@ ax3.grid(True)
 fig5.set_size_inches(12, 4)
 fig5.savefig("Plots/LineGraphAccuracyAgainstModelProperties.png", dpi=150)
 
+# plot best only
+fig5, (ax1,ax2, ax3) = plt.subplots(1,3)
+
+#ax1.fill_between(np.arange(minCpG,maxCpG,1), np.asarray(mergeDf.groupby(allDat["SVM"].nCpG).quantile(0.25)["best"]), np.asarray(mergeDf.groupby(allDat["SVM"].nCpG).quantile(0.75)["best"]), alpha = 0.5)
+sigma = mergeDf.groupby(allDat["SVM"].nCpG).std()["best"]
+ax1.fill_between(np.arange(minCpG,maxCpG,1), np.asarray(groupedCpG['best'])-sigma, np.asarray(groupedCpG['best'])+sigma, alpha = 0.5)
+ax1.plot(np.arange(minCpG,maxCpG,1), np.asarray(groupedCpG['best']), "k")
+ax1.set_ylabel('Mean accuracy')  
+ax1.set_xlabel('Number of CpGs')  
+ax1.grid(True)
+
+## plot against window size
+#ax2.fill_between(np.arange(100,maxWindow+100,100), np.asarray(mergeDf.groupby(windowBins).quantile(0.25)["best"]), np.asarray(mergeDf.groupby(windowBins).quantile(0.75)["best"]), alpha = 0.5)
+sigma = mergeDf.groupby(windowBins).std()["best"]
+ax2.fill_between(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['best']) - sigma, np.asarray(groupedSpan['best']) + sigma, alpha = 0.5)
+ax2.plot(np.arange(100,maxWindow+100,100), np.asarray(groupedSpan['best']), "k")
+ax2.set_xlabel('Span of CpGs')  
+ax2.grid(True)
+
+#ax3.fill_between(densityBreaks[1:], np.asarray(mergeDf.groupby(densityBins).quantile(0.25)["best"]), np.asarray(mergeDf.groupby(densityBins).quantile(0.75)["best"]), alpha = 0.5)
+sigma = mergeDf.groupby(densityBins).std()["best"]
+ax3.fill_between(densityBreaks[1:], np.asarray(mergeDf.groupby(densityBins).quantile(0.25)["best"]) - sigma, np.asarray(mergeDf.groupby(densityBins).quantile(0.75)["best"]) + sigma, alpha = 0.5)
+ax3.plot(densityBreaks[1:], np.asarray(groupedDensity['best']), "k")
+ax3.set_xlabel('Density of CpGs')  
+ax3.grid(True)
+fig5.set_size_inches(12, 4)
+fig5.savefig("Plots/LineGraphAccuracyAgainstModelPropertiesBestOnly.png", dpi=150)
 
 # summarise model properties as a function of accuracy
 accuracyBreaks = np.arange(0.5,1.01,0.01)
@@ -197,11 +266,14 @@ accuracyBins = pd.cut(allDat["RandFor"]['MeanAccuracy'], bins = accuracyBreaks)
 randforByAccuracy = allDat["RandFor"].groupby(accuracyBins).mean()
 accuracyBins = pd.cut(allDat["SVM"]['MeanAccuracy'], bins = accuracyBreaks)
 svmByAccuracy = allDat["SVM"].groupby(accuracyBins).mean()
+accuracyBins = pd.cut(mergeDf["best"], bins = accuracyBreaks)
+bestByAccuracy = allDat["SVM"].groupby(accuracyBins).mean()
 
 ax1.plot(accuracyBreaks[:-1]+0.005, np.asarray(knnByAccuracy['nCpG']), label = "KNN")
 ax1.plot(accuracyBreaks[:-1]+0.005, np.asarray(nbayesByAccuracy['nCpG']), label = "Naive Bayes")
 ax1.plot(accuracyBreaks[:-1]+0.005, np.asarray(randforByAccuracy['nCpG']), label = "Random Forest")
 ax1.plot(accuracyBreaks[:-1]+0.005, np.asarray(svmByAccuracy['nCpG']), label = "SVM")
+ax1.plot(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['nCpG']), label = "Best")
 ax1.set_ylabel('Number of CpGs')  
 ax1.set_xlabel('Mean accuracy')  
 ax1.grid(True)
@@ -210,6 +282,7 @@ ax2.plot(accuracyBreaks[:-1]+0.005, np.asarray(knnByAccuracy['WindowSize']), lab
 ax2.plot(accuracyBreaks[:-1]+0.005, np.asarray(nbayesByAccuracy['WindowSize']), label = "Naive Bayes")
 ax2.plot(accuracyBreaks[:-1]+0.005, np.asarray(randforByAccuracy['WindowSize']), label = "Random Forest")
 ax2.plot(accuracyBreaks[:-1]+0.005, np.asarray(svmByAccuracy['WindowSize']), label = "SVM")
+ax2.plot(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['WindowSize']), label = "Best")
 ax2.set_ylabel('Span of CpGs (bp)')  
 ax2.set_xlabel('Mean accuracy')  
 ax2.grid(True)
@@ -218,6 +291,7 @@ ax3.plot(accuracyBreaks[:-1]+0.005, np.asarray(knnByAccuracy['Density']), label 
 ax3.plot(accuracyBreaks[:-1]+0.005, np.asarray(nbayesByAccuracy['Density']), label = "Naive Bayes")
 ax3.plot(accuracyBreaks[:-1]+0.005, np.asarray(randforByAccuracy['Density']), label = "Random Forest")
 ax3.plot(accuracyBreaks[:-1]+0.005, np.asarray(svmByAccuracy['Density']), label = "SVM")
+ax3.plot(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['Density']), label = "Best")
 ax3.set_ylabel('Density of CpGs (bp)')  
 ax3.set_xlabel('Mean accuracy')  
 ax3.grid(True)
@@ -231,3 +305,30 @@ plt.subplots_adjust(left=0.05,
                     hspace=0.4)
 fig6.set_size_inches(12, 4)
 fig6.savefig("Plots/LineGraphModelPropertiesAgainstAccuracy.png", dpi=150)
+
+## Best only
+fig6, (ax1,ax2, ax3) = plt.subplots(1,3)
+
+accuracyBins = pd.cut(mergeDf["best"], bins = accuracyBreaks)
+sigma = allDat["SVM"].groupby(accuracyBins).std()
+
+ax1.fill_between(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['nCpG']) - np.asarray(sigma['nCpG']), np.asarray(bestByAccuracy['nCpG']) + np.asarray(sigma['nCpG']), alpha = 0.5)
+ax1.plot(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['nCpG']), "k")
+ax1.set_ylabel('Number of CpGs')  
+ax1.set_xlabel('Mean accuracy')  
+ax1.grid(True)
+
+ax2.fill_between(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['WindowSize']) - np.asarray(sigma['WindowSize']), np.asarray(bestByAccuracy['WindowSize']) + np.asarray(sigma['WindowSize']), alpha = 0.5)
+ax2.plot(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['WindowSize']), "k")
+ax2.set_ylabel('Span of CpGs (bp)')  
+ax2.set_xlabel('Mean accuracy')  
+ax2.grid(True)
+
+ax3.fill_between(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['Density']) - np.asarray(sigma['Density']), np.asarray(bestByAccuracy['Density']) + np.asarray(sigma['Density']), alpha = 0.5)
+ax3.plot(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['Density']), "k")
+ax3.set_ylabel('Density of CpGs (bp)')  
+ax3.set_xlabel('Mean accuracy')  
+ax3.grid(True)
+
+fig6.set_size_inches(12, 4)
+fig6.savefig("Plots/LineGraphModelPropertiesAgainstAccuracyBestOnly.png", dpi=150)
