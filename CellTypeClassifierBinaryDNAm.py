@@ -44,6 +44,7 @@ trainDataPath = sys.argv[3]
 resultsPath = sys.argv[4]
 ctCol = int(sys.argv[5])
 nobs = int(sys.argv[6]) # how many "single cell" observations to simulate per cell type
+array = sys.argv[7] # if array data
 
 ## load training data
 betas = pd.read_csv(trainDataPath + "betas_chr" + str(chr) + ".csv").values
@@ -57,15 +58,20 @@ print("Beta values loaded for " + str(np.shape(betas)[1]) + " samples")
 ## array of cell type labels (i.e. what we want to predict)
 inputY = pheno[:,ctCol]
 
+## filter to samples with labels
+betas = betas[:,(~pd.isnull(inputY))]
+inputY = inputY[(~pd.isnull(inputY))]
+
+print("Cell type labels found for " + str(np.shape(betas)[1]) + " samples")
+
 ## calculate the number of CT
-nCT = np.unique(pheno[:, ctCol]).shape[0]
+nCT = np.unique(inputY).shape[0]
 
 ## check format of Y
 if ((nCT == 2) & (type_of_target(inputY) != 'binary')):   
     inputY = inputY.astype(int)
 
 print("Found " + str(nCT) + " cell types to predict")
-
 print("Outcome is a " + type_of_target(inputY) + " variable")
 
 
@@ -91,8 +97,9 @@ ctProbs = pd.DataFrame(betas).groupby(inputY, axis = 'columns').mean() ## matrix
 
 ## as sensitivity of array is poor at the extremes were meth level is estimated as >0.9 should be effectively 1, and <0.1, 0
 ## change these values
-ctProbs = np.where(ctProbs > 0.9, 1, ctProbs)
-ctProbs = np.where(ctProbs < 0.1, 0, ctProbs)
+if array:
+    ctProbs = np.where(ctProbs > 0.9, 1, ctProbs)
+    ctProbs = np.where(ctProbs < 0.1, 0, ctProbs)
 
 ## create bin test and training data used mean DNAm as probability a CpG is methylated for a particular read
 train_obs = np.empty((nsites, nCT*nobs, nCV), dtype = int)
