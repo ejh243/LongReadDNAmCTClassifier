@@ -69,7 +69,7 @@ for threshold in np.arange(0.7,1.00, 0.02):
                 output.append(threshold)
                 boolIndex = getattr(granges,ml + "_CT" + str(i+1)) > threshold
                 ## count number of models
-                #print("Aggregating " + str(sum(boolIndex)) + "" + col + " models.")
+                print("Aggregating " + str(sum(boolIndex)) + " models.")
                 output.append(sum(boolIndex))
                 if sum(boolIndex) > 0:
              
@@ -113,6 +113,8 @@ for threshold in np.arange(0.7,1.00, 0.02):
                             ## find all models within this region
                             start = modelOverlaps.Start.to_numpy()[i]
                             end = modelOverlaps.End.to_numpy()[i]
+                            chr = modelOverlaps.Chromosome.to_numpy()[i]
+
                             ## find smallest starting region 
                             startIndex = (granges.Chromosome == chr) & (granges.Start == start) & (boolIndex)
                             startModel = granges[startIndex]
