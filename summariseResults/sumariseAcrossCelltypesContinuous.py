@@ -56,7 +56,7 @@ for ct in cellTypes:
 
 
 ## violinplot of accuracy statistics
-fig1, ax1 = plt.subplots()
+fig1, ax1 = plt.subplots(figsize = (10, 6))
 vplots = ax1.violinplot(pd.concat([allDat[x] for x in cellTypes], axis = 1, names = cellTypes),showextrema=True, showmedians=True)
 # Set the color of the violin patches
 colNum=0
@@ -175,20 +175,3 @@ plt.subplots_adjust(left=0.05,
                     hspace=0.4)
 fig6.set_size_inches(12, 4)
 fig6.savefig("Plots/LineGraphModelPropertiesAgainstAccuracyAcrossCellTypes.png", dpi=150)
-
-## compare regions
-allRegions = {}
-for ct in cellTypes:
-    results = pd.read_csv(os.path.join(ct,"SummaryModelPerformanceByAccuracyContinuousClassifiers.csv"), header = 0, names = ("Algorithm", "Threshold", "nModels", "MeanModelSize", "SDModelSize", "nRegions", "MeanRegionSize", "SDRegionSize", "TotalRegionLength", "MeanInterRegionSize", "SDInterRegionSize", "TotalInterRegionSize", "ProportionBasesInRegion", "MeannModelsRegion", "SDnModelsRegion", "MaxnModelsRegion", "nSingleModelRegions", "MeanMinOverlapRegion", "SDMinOverlapRegion"))
-    allRegions[ct] = results[results.Algorithm == "BestAccuracy"].reset_index()
-
-
-for sumStat in ["nRegions", "MeanRegionSize", "ProportionBasesInRegion", "MeanInterRegionSize",  "MeannModelsRegion"]:
-    fig2, ax1 = plt.subplots()
-    ax1.plot(pd.concat([allRegions[x][sumStat] for x in cellTypes], axis = 1, names = cellTypes))
-    ax1.set_xticklabels([str(round(float(label), 2)) for label in allRegions[ct]["Threshold"]])
-    ax1.set_ylabel('Number of Regions')  
-    ax1.set_xlabel('Accuracy Threshold')
-    ax1.grid(True)
-    ax1.legend(labels = cellTypes)
-    fig2.savefig("Plots/LineGraphAccuracy" + sumStat + "ContinuousClassifiersAcrossCellTypes.png", dpi=150)

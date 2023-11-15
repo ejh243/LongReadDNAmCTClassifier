@@ -16,21 +16,28 @@ allFiles = os.listdir()
 allFiles = list(filter(lambda x:'ContinuousClassifier' in x, allFiles))
 
 allDat = {}
-
-
+modelOpts = ["KNN", "NBayes", "RandFor", "SVM"]
+modelMissing = []
 ## load results
-for modelType in ["KNN", "NBayes", "RandFor", "SVM"]:
+for modelType in modelOpts:
     subFiles = list(filter(lambda x:modelType in x, allFiles))
     print(str(len(subFiles)) + " files found for model type " + modelType)
-    allDat[modelType] = pd.concat(list(map(utils.loadResults, subFiles))).sort_values(by=["Chr", "Position", "nCpG"])
-    ## count
-    print(str(len(allDat[modelType])) + " models loaded for model type " + modelType)
-    ## add Density column
-    allDat[modelType]["Density"] = allDat[modelType]['WindowSize']/allDat[modelType]['nCpG']
+    if len(subFiles) == 22:
+       allDat[modelType] = pd.concat(list(map(utils.loadResults, subFiles))).sort_values(by=["Chr", "Position", "nCpG"])
+       ## count
+       print(str(len(allDat[modelType])) + " models loaded for model type " + modelType)
+       ## add Density column
+       allDat[modelType]["Density"] = allDat[modelType]['WindowSize']/allDat[modelType]['nCpG']
+    else:
+        modelMissing.append(modelType)
+
+if modelMissing is not None and len(modelMissing) > 0:
+    modelOpts = [modelType for modelType in modelOpts if modelType not in modelMissing]
 
 
 ## merge into a single data.frame to determine best algorithm for each model
-mergeDf = pd.DataFrame({'svm': allDat["SVM"]["MeanAccuracy"], 'knn': allDat["KNN"]["MeanAccuracy"], 'naiveBayes': allDat["NBayes"]["MeanAccuracy"], 'randomForest': allDat["RandFor"]["MeanAccuracy"]})
+mergeDf = pd.concat([allDat[x]["MeanAccuracy"] for x in modelOpts], axis = 1)
+mergeDf.columns = modelOpts
 ## identify for each model the best ML algorithm
 maxMean = mergeDf.max(1)
 mergeDf.idxmax(1).value_counts()
@@ -38,20 +45,19 @@ mergeDf['best'] = maxMean
 
 ## create set of genomic regions
 
-granges = pr.PyRanges(chromosomes = allDat["SVM"]["Chr"].astype("int"), starts = allDat["SVM"]["Position"], ends = allDat["SVM"]["Position"]+allDat["SVM"]["WindowSize"]) 
-setattr(granges, "SVM", allDat["SVM"]['MeanAccuracy'])
-setattr(granges, "KNN", allDat["KNN"]['MeanAccuracy'])
-setattr(granges, "NaiveBayes", allDat["NBayes"]['MeanAccuracy'])
-setattr(granges, "RandomForest", allDat["RandFor"]['MeanAccuracy'])
+granges = pr.PyRanges(chromosomes = allDat[modelOpts[0]]["Chr"].astype("int"), starts = allDat[modelOpts[0]]["Position"], ends = allDat[modelOpts[0]]["Position"]+allDat[modelOpts[0]]["WindowSize"])
+for each in modelOpts:
+    setattr(granges, each, allDat[each]['MeanAccuracy'])
+
 setattr(granges, "BestAccuracy", mergeDf['best'])
-setattr(granges, "nCpG", allDat["SVM"]["nCpG"])
+setattr(granges, "nCpG", allDat[modelOpts[0]]["nCpG"])
 
 ## how many genomic regions with reasonable predictive power
 
 allRows = []
 
 ## identify models with sufficinet accuracy
-col = ("SVM", "KNN", "NaiveBayes", "RandomForest", "BestAccuracy")
+col = modelOpts + ["BestAccuracy"]
 for threshold in np.arange(0.7,1.00, 0.02):
     print("Aggregating models with accuracy > " + str(threshold))
     for ml in col:
