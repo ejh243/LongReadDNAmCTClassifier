@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-plt.rcParams.update({'font.size': 22})
+plt.rcParams.update({'font.size': 15})
 
 
 ## process command line information
@@ -25,6 +25,8 @@ ax1.set_ylabel('Number of Regions')
 ax1.set_xlabel('Accuracy Threshold')
 ax1.grid(True)
 ax1.legend(labels = ["KNN", "Naive Bayes", "Random Forest", "SVM", "Best"])
+# This should be called after all axes have been added
+fig1.tight_layout()
 fig1.savefig("Plots/LineGraphAccuracynRegions" + dataType + "Classifiers.png", dpi=150)
 
 fig1,ax1 = plt.subplots()
@@ -32,6 +34,8 @@ ax1.plot(results.pivot(columns = "Algorithm", values = "nRegions", index = "Thre
 ax1.set_ylabel('Number of Regions')  
 ax1.set_xlabel('Accuracy Threshold')
 ax1.grid(True)
+# This should be called after all axes have been added
+fig1.tight_layout()
 fig1.savefig("Plots/LineGraphAccuracynRegions" + dataType + "ClassifiersBestOnly.png", dpi=150)
 
 
