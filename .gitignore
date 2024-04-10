@@ -1,5 +1,9 @@
 # all log files
-*.log
+LogFiles/*
+jobSubmission/*
 
 # all profiling files
 mprof*
+
+# python files
+*.pyc

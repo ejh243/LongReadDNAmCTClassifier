@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+from pandas.api.types import CategoricalDtype
 
 # accuracy threshold
 thres = 0.9
@@ -59,6 +60,8 @@ aggResults["ProportionBasesInRegion"] = aggResults.TotalRegionLength/ (aggResult
 
 aggResults = aggResults.reset_index()
 
+cat_type = CategoricalDtype(categories=cellTypes, ordered=True)
+aggResults["CellType"] = aggResults["CellType"].astype(cat_type)
 
 fig1,ax1 = plt.subplots()
 ax1.plot(aggResults.pivot(columns = "CellType", values = "nRegions", index = "Threshold"))
@@ -135,8 +138,8 @@ ax1.grid(True)
 ax1.legend(aggResults.CellType.unique())
 fig8.savefig("Plots/LineGraphAccuracyMeanMinOverlapRegionContinuousClassifiersAcrossCellTypes.png", dpi=150)
 
-# mulitpanel figure
-
+# mulitpanel figurexvar 
+xvar = aggResults.Threshold.unique()
 fig, axs = plt.subplots(2,3)
 axs[0,0].plot(aggResults.pivot(columns = "CellType", values = "nRegions", index = "Threshold"))
 axs[0,0].set_ylabel('Number of Regions')  
@@ -182,7 +185,7 @@ axs[1,1].legend(aggResults.CellType.unique())
 axs[1,2].axis('off')
 
 handles, labels = axs[0,0].get_legend_handles_labels()
-axs[1,2].legend(handles, labels)
+#axs[1,2].legend(handles, labels)
 
 
 plt.subplots_adjust(left=0.1,
@@ -192,7 +195,7 @@ plt.subplots_adjust(left=0.1,
                     wspace=0.3, 
                     hspace=0.4)
                     
-fig.legend(lines, labels, loc = (0.5, 0), ncol=5)
-fig.set_size_inches(15, 8)
+fig.legend(bbox_to_anchor=(1.3, 0.6))
+fig.set_size_inches(16, 8)
 
 fig.savefig("Plots/MultiPanelPlotLineGraphAccuracyRegionPropertiesContinuousClassifiersAcrossCellTypes.png", dpi=150)

@@ -11,7 +11,8 @@ def processBeta(filename, minRD = 10):
 def testCTDiffs(betas, X):
     model = sm.OLS(betas.to_numpy(), X).fit()
     return(model.f_test("x1 = x2 = x3 = x4").pvalue)
-    
+
+
 import sys
 import numpy as np
 import pandas as pd
