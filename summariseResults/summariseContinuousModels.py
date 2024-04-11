@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
-plt.rcParams.update({'font.size': 22})
+plt.rcParams.update({'font.size': 12})
 
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
@@ -88,7 +88,8 @@ ax3.yaxis.set_major_locator(mticker.FixedLocator(y_vals))
 ax3.set_yticklabels(['{:.0f}'.format(x / 1000) for x in y_vals])
 
 # Save files in png format
-fig1.set_size_inches(12, 4)
+fig1.set_size_inches(16, 8)
+fig1.subplots_adjust(bottom=0.3)
 fig1.savefig("Plots/HistogramModelCharacteristics.png", dpi=150)
 
 
@@ -108,10 +109,10 @@ for partname in ('cbars','cmins','cmaxes','cmedians'):
     vp.set_linewidth(1)
 
 
-plt.xticks((1,2,3,4), ("KNN", "Naive Bayes", "Random Forest", "SVM"))
+plt.xticks((1,2,3,4), ("KNN", "Naive Bayes", "Random Forest", "SVM"), rotation = 25)
 ax1.set(xlim = [0.5,4.5], ylim = [0,1], xlabel='Algorithm', ylabel='Mean accuracy across CV')
 ax1.grid(True)
-ax1.legend()
+fig2.subplots_adjust(bottom=0.3)
 fig2.savefig("Plots/ViolinplotAccuracyContinuousClassifiers.png", dpi=150)
 
 
@@ -128,7 +129,7 @@ mergeDf['best'].describe()
 
 fig2, ax1 = plt.subplots()
 vplots = ax1.violinplot((allDat["KNN"]['MeanAccuracy'],allDat["NBayes"]['MeanAccuracy'],allDat["RandFor"]['MeanAccuracy'],allDat["SVM"]['MeanAccuracy'], mergeDf['best']),showextrema=True, showmedians=True)
-plt.xticks((1,2,3,4,5), ("KNN", "Naive Bayes", "Random Forest", "SVM", "Best"))
+plt.xticks((1,2,3,4,5), ("KNN", "Naive Bayes", "Random Forest", "SVM", "Best"), rotation = 25)
 ax1.set(xlim = [0.5,5.5], ylim = [0,1], xlabel='Algorithm', ylabel='Mean accuracy')
 ax1.grid(True)
 # Set the color of the violin patches
@@ -142,6 +143,7 @@ for partname in ('cbars','cmins','cmaxes','cmedians'):
     vp.set_edgecolor("black")
     vp.set_linewidth(1)
 
+fig2.subplots_adjust(bottom=0.3)
 fig2.savefig("Plots/ViolinplotAccuracyContinuousClassifiersWithBest.png", dpi=150)
 
 
@@ -165,6 +167,7 @@ ax1.yaxis.set_major_locator(mticker.FixedLocator(y_vals))
 ax1.set_yticklabels(['{:.0f}'.format(x / 1000) for x in y_vals])
 ax1.legend()
 ax1.grid(True)
+fig3.subplots_adjust(bottom=0.1, left = 0.2)
 fig3.savefig("Plots/LineGraphCumulativeAccuracyContinuousClassifiers.png", dpi=150)
 
 ## for each model how many algorithms produce accuracte predictions?
@@ -174,9 +177,13 @@ width = 1  # the width of the bars
 axs.bar(x, (mergeDf.drop('best', axis = 1) > thres).sum(1).value_counts(sort=False).values, width)
 
 # Add some text for labels, title and custom x-axis tick labels, etc.
-axs.set_ylabel('Number of classifiers')
+axs.set_ylabel('Number of classifiers (millions)')
+y_vals = axs.get_yticks()
+axs.yaxis.set_major_locator(mticker.FixedLocator(y_vals))
+axs.set_yticklabels(['{:.1f}'.format(x / 1000000) for x in y_vals])
 axs.set_xlabel('Number of algorithms')
 axs.set_xticks(x)
+fig4.subplots_adjust(bottom=0.25, left = 0.25)
 fig4.savefig("Plots/BarchartNumberofPredictiveAlgorithmsContinuousClassifiers.png", dpi=150)
 
 
@@ -223,7 +230,7 @@ ax3.plot(densityBreaks[1:], np.asarray(groupedDensity['best']), label = "Best")
 ax3.set_xlabel('Density of CpGs')  
 ax3.legend()
 ax3.grid(True)
-fig5.set_size_inches(12, 4)
+fig5.set_size_inches(21, 7)
 fig5.savefig("Plots/LineGraphAccuracyAgainstModelProperties.png", dpi=150)
 
 # plot best only
@@ -251,7 +258,7 @@ ax3.fill_between(densityBreaks[1:], np.asarray(mergeDf.groupby(densityBins).quan
 ax3.plot(densityBreaks[1:], np.asarray(groupedDensity['best']), "k")
 ax3.set_xlabel('Density of CpGs')  
 ax3.grid(True)
-fig5.set_size_inches(12, 4)
+fig5.set_size_inches(21, 7)
 fig5.savefig("Plots/LineGraphAccuracyAgainstModelPropertiesBestOnly.png", dpi=150)
 
 # summarise model properties as a function of accuracy
@@ -303,7 +310,7 @@ plt.subplots_adjust(left=0.05,
                     top=0.95, 
                     wspace=0.3, 
                     hspace=0.4)
-fig6.set_size_inches(12, 4)
+fig6.set_size_inches(21, 7)
 fig6.savefig("Plots/LineGraphModelPropertiesAgainstAccuracy.png", dpi=150)
 
 ## Best only
@@ -320,15 +327,21 @@ ax1.grid(True)
 
 ax2.fill_between(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['WindowSize']) - np.asarray(sigma['WindowSize']), np.asarray(bestByAccuracy['WindowSize']) + np.asarray(sigma['WindowSize']), alpha = 0.5)
 ax2.plot(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['WindowSize']), "k")
-ax2.set_ylabel('Span of CpGs (bp)')  
-ax2.set_xlabel('Mean accuracy')  
+ax2.set_ylabel('Span of CpGs (kb)') 
+y_vals = ax2.get_yticks()
+ax2.yaxis.set_major_locator(mticker.FixedLocator(y_vals))
+ax2.set_yticklabels(['{:.0f}'.format(x / 1000) for x in y_vals])
+ ax2.set_xlabel('Mean accuracy')  
 ax2.grid(True)
 
 ax3.fill_between(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['Density']) - np.asarray(sigma['Density']), np.asarray(bestByAccuracy['Density']) + np.asarray(sigma['Density']), alpha = 0.5)
 ax3.plot(accuracyBreaks[:-1]+0.005, np.asarray(bestByAccuracy['Density']), "k")
-ax3.set_ylabel('Density of CpGs (bp)')  
+ax3.set_ylabel('Density of CpGs (kb)')  
+y_vals = ax3.get_yticks()
+ax3.yaxis.set_major_locator(mticker.FixedLocator(y_vals))
+ax3.set_yticklabels(['{:.1f}'.format(x / 1000) for x in y_vals])
 ax3.set_xlabel('Mean accuracy')  
 ax3.grid(True)
 
-fig6.set_size_inches(12, 4)
+fig6.set_size_inches(21, 7)
 fig6.savefig("Plots/LineGraphModelPropertiesAgainstAccuracyBestOnly.png", dpi=150)
