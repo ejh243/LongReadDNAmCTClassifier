@@ -7,6 +7,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
+plt.rcParams.update({'font.size': 12})
+
+colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+
+
 # accuracy threshold
 thres = 0.9
 
@@ -58,11 +63,14 @@ for ct in cellTypes:
 ## violinplot of accuracy statistics
 fig1, ax1 = plt.subplots(figsize = (10, 6))
 vplots = ax1.violinplot(pd.concat([allDat[x] for x in cellTypes], axis = 1, names = cellTypes),showextrema=True, showmedians=True)
-# Set the color of the violin patches
-colNum=0
-for pc in vplots['bodies']:
-    pc.set_facecolor("C" + str(colNum))
-    colNum+=1
+
+    # Set the color of the violin patches
+for pc, col in zip(vplots['bodies'], colors):
+    pc.set_facecolor(col)
+    #pc.set_edgecolor('black')
+    pc.set_alpha(1)
+
+
 
 # Make all the violin statistics marks black:
 for partname in ('cbars','cmins','cmaxes','cmedians'):
@@ -72,7 +80,7 @@ for partname in ('cbars','cmins','cmaxes','cmedians'):
 
 
 plt.xticks(list(range(1, nCT+1)), cellTypes)
-ax1.set(xlim = [0.5,nCT+0.5], ylim = [0.4,1], xlabel='Cell type', ylabel='Mean accuracy across CV')
+ax1.set(xlim = [0.5,nCT+0.5], ylim = [0.4,1.01], xlabel='Cell type', ylabel='Mean accuracy across CV')
 ax1.grid(True)
 fig1.savefig("Plots/ViolinplotAccuracyContinuousClassifiersAcrossCellTypes.png", dpi=150)
 
@@ -98,6 +106,7 @@ ax1.yaxis.set_major_locator(mticker.FixedLocator(y_vals))
 ax1.set_yticklabels(['{:.0f}'.format(x / 1000) for x in y_vals])
 ax1.legend()
 ax1.grid(True)
+fig3.subplots_adjust(left = 0.2)
 fig3.savefig("Plots/LineGraphCumulativeAccuracyContinuousClassifiersAcrossCellTypes.png", dpi=150)
 
 
@@ -126,6 +135,7 @@ for each in cellTypes:
 ax2.set_xlabel('Span of CpGs')  
 ax2.grid(True)
 
+       
 ## plot against density
 tmpDat[modelOptsFilt[0]]["Density"] = tmpDat[modelOptsFilt[0]]['WindowSize']/tmpDat[modelOptsFilt[0]]['nCpG']
 maxDensity = tmpDat[modelOptsFilt[0]].Density.max()
@@ -137,9 +147,13 @@ for each in cellTypes:
     ax3.plot(densityBreaks[1:], np.asarray(groupedDensity[each]), label = each)
 
 ax3.set_xlabel('Density of CpGs')  
-ax3.legend()
+#ax3.legend()
+ax3.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 ax3.grid(True)
-fig5.set_size_inches(12, 4)
+
+ax3.set(ylim = [0.6,1.01])
+fig5.set_size_inches(15, 4)
+fig5.subplots_adjust(bottom = 0.1, right = 0.85)
 fig5.savefig("Plots/LineGraphAccuracyAgainstModelPropertiesAcrossCellTypes.png", dpi=150)
 
 
@@ -165,13 +179,13 @@ ax2.grid(True)
 ax3.set_ylabel('Density of CpGs (bp)')  
 ax3.set_xlabel('Mean accuracy')  
 ax3.grid(True)
-ax3.legend()
+ax3.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
 plt.subplots_adjust(left=0.05,
                     bottom=0.12, 
-                    right=0.95, 
+                    right=0.85, 
                     top=0.95, 
                     wspace=0.3, 
                     hspace=0.4)
-fig6.set_size_inches(12, 4)
+fig6.set_size_inches(15, 4)
 fig6.savefig("Plots/LineGraphModelPropertiesAgainstAccuracyAcrossCellTypes.png", dpi=150)
