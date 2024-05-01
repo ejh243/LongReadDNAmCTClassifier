@@ -8,6 +8,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
+plt.rcParams.update({'font.size': 12})
+
+colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+
+
 # accuracy threshold
 thres = 0.9
 
@@ -66,8 +71,23 @@ maxDensity = tmpDat[modelType].Density.max()
 
 
 ## violinplot of accuracy statistics
-fig2, ax1 = plt.subplots()
-ax1.violinplot(pd.concat([allDat[x] for x in cellTypes[::2]], axis = 1, names = allDat.keys()),showextrema=True, showmedians=True)
+fig2, ax1 = plt.subplots(figsize = (10, 6))
+vplots = ax1.violinplot(pd.concat([allDat[x] for x in cellTypes[::2]], axis = 1, names = cellTypes),showextrema=True, showmedians=True)
+
+  # Set the color of the violin patches
+for pc, col in zip(vplots['bodies'], colors):
+    pc.set_facecolor(col)
+    #pc.set_edgecolor('black')
+    pc.set_alpha(1)
+
+
+
+# Make all the violin statistics marks black:
+for partname in ('cbars','cmins','cmaxes','cmedians'):
+    vp = vplots[partname]
+    vp.set_edgecolor("black")
+    vp.set_linewidth(1)
+
 plt.xticks(np.array(range(len(allDat)))+1, allDat.keys())
 ax1.set(xlim = [0.5,nCT+0.5], ylim = [0,1], xlabel='Cell type', ylabel='Mean accuracy across CV')
 ax1.grid(True)
@@ -87,7 +107,7 @@ axs.bar(x, countCT.sum(axis = 1).value_counts(sort=False).values, width)
 axs.set_ylabel('Number of models')
 axs.set_xlabel('Number of cell types')
 axs.set_xticks(x)
-fig3.savefig("Plots/BarchartNumberofCelltypesPredictedBinary" + modelType + "Classifiers.png", dpi=150)
+fig3.savefig("Plots/BarchartNumberofCelltypesPredictedBinaryClassifiers.png", dpi=150)
 
 ## count cumulative sum of number of models with accuracy > x.
 
@@ -121,7 +141,7 @@ minCpG = tmpDat[modelOptsFilt[0]].nCpG.min()
 maxCpG = max(tmpDat[modelOptsFilt[0]].nCpG)+1
 for each in cellTypes[::2]:
     ax1.plot(np.arange(minCpG,maxCpG,1), np.asarray(groupedCpG[each]), label = each)
-ax1.legend()
+
 ax1.set_ylabel('Mean accuracy')  
 ax1.set_xlabel('Number of CpGs')  
 ax1.grid(True)
@@ -149,8 +169,11 @@ for each in cellTypes[::2]:
     ax3.plot(densityBreaks[1:], np.asarray(groupedDensity[each]), label = each)
 
 ax3.set_xlabel('Density of CpGs')  
+ax3.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 ax3.grid(True)
-fig5.set_size_inches(12, 4)
+
+fig5.set_size_inches(15, 4)
+fig5.subplots_adjust(bottom = 0.15, right = 0.85)
 fig5.savefig("Plots/LineGraphAccuracyAgainstModelPropertiesAcrossCellTypesBinaryClassifiers.png", dpi=150)
 
 
@@ -171,6 +194,7 @@ for each in cellTypes[::2]:
 ax1.set_ylabel('Number of CpGs')  
 ax1.set_xlabel('Mean accuracy')  
 ax1.grid(True)
+
 ax2.set_ylabel('Span of CpGs (bp)')  
 ax2.set_xlabel('Mean accuracy')  
 ax2.grid(True)
@@ -178,15 +202,17 @@ ax2.grid(True)
 ax3.set_ylabel('Density of CpGs (bp)')  
 ax3.set_xlabel('Mean accuracy')  
 ax3.grid(True)
-ax3.legend()
+ax3.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
 
 plt.subplots_adjust(left=0.05,
                     bottom=0.12, 
-                    right=0.95, 
+                    right=0.85, 
                     top=0.95, 
                     wspace=0.3, 
                     hspace=0.4)
-fig6.set_size_inches(12, 4)
+fig6.set_size_inches(15, 4)
+fig6.subplots_adjust(bottom = 0.15)
 fig6.savefig("Plots/LineGraphModelPropertiesAgainstAccuracyAcrossCellTypesBinaryClassifiers.png", dpi=150)
 
 

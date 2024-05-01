@@ -7,8 +7,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-plt.rcParams.update({'font.size': 15})
 
+plt.rcParams.update({'font.size': 12})
+
+colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
 # accuracy threshold
 thres = 0.9
@@ -53,7 +55,6 @@ aggResults["MeanRegionSize"] = aggResults.TotalRegionLength/aggResults.nRegions
 aggResults["MeanInterRegionSize"] = aggResults.TotalInterRegionSize/(aggResults.nRegions+22)
 aggResults["MeannModelsRegion"] = aggResults.nModels/aggResults.nRegions
 
-
 aggResults["MeanModelSize"] = results[["CellType", "Threshold", "nModels", "MeanModelSize"]].groupby(["CellType", "Threshold"]).apply(lambda x: "NaN" if sum(x.nModels) == 0 else np.average(x.MeanModelSize, weights = x.nModels, axis = 0))
 
 aggResults["MeanMinOverlapRegion"] = results[["CellType", "Threshold", "nRegions", "MeanMinOverlapRegion"]].groupby(["CellType", "Threshold"]).apply(lambda x: "NaN" if sum(x.nRegions) == 0 else np.average(x.MeanMinOverlapRegion, weights = x.nRegions, axis = 0))
@@ -69,7 +70,7 @@ ax1.plot(aggResults.pivot(columns = "CellType", values = "nRegions", index = "Th
 ax1.set_ylabel('Number of Regions')  
 ax1.set_xlabel('Accuracy Threshold')
 ax1.grid(True)
-ax1.legend(labels = aggResults.CellType.unique())
+ax1.legend(cellTypes)
 fig1.savefig("Plots/LineGraphAccuracynRegionsBinaryClassifiersAcrossCellTypes.png", dpi=150)
 
 
@@ -78,7 +79,7 @@ ax1.plot(aggResults.pivot(columns = "CellType", values = "MeanModelSize", index 
 ax1.set_ylabel('Mean span of CpGs (bp)')  
 ax1.set_xlabel('Accuracy Threshold')
 ax1.grid(True)
-ax1.legend(aggResults.CellType.unique())
+ax1.legend(cellTypes)
 fig2.savefig("Plots/LineGraphAccuracyMeanModelSizeBinaryClassifiersAcrossCellTypes.png", dpi=150)
 
 
@@ -88,7 +89,7 @@ ax1.plot(aggResults.pivot(columns = "CellType", values = "ProportionBasesInRegio
 ax1.set_ylabel('Proportion bases')  
 ax1.set_xlabel('Accuracy Threshold')
 ax1.grid(True)
-ax1.legend(aggResults.CellType.unique())
+ax1.legend(cellTypes)
 fig3.savefig("Plots/LineGraphAccuracyProportionBasesBinaryClassifiersAcrossCellTypes.png", dpi=150)
 
 
@@ -98,7 +99,7 @@ ax1.plot(aggResults.pivot(columns = "CellType", values = "MeanRegionSize", index
 ax1.set_ylabel('Mean region size')  
 ax1.set_xlabel('Accuracy Threshold')
 ax1.grid(True)
-ax1.legend(aggResults.CellType.unique())
+ax1.legend(cellTypes)
 fig4.savefig("Plots/LineGraphAccuracyMeanRegionSizeBinaryClassifiersAcrossCellTypes.png", dpi=150)
 
 
@@ -107,7 +108,7 @@ ax1.plot(aggResults.pivot(columns = "CellType", values = "MeanInterRegionSize", 
 ax1.set_ylabel('Mean gap between regions')  
 ax1.set_xlabel('Accuracy Threshold')
 ax1.grid(True)
-ax1.legend(aggResults.CellType.unique())
+ax1.legend(cellTypes)
 fig5.savefig("Plots/LineGraphAccuracyMeanInterRegionSizeBinaryClassifiersAcrossCellTypes.png", dpi=150)
 
 
@@ -116,7 +117,7 @@ ax1.plot(aggResults.pivot(columns = "CellType", values = "MeannModelsRegion", in
 ax1.set_ylabel('Mean number of models per region')  
 ax1.set_xlabel('Accuracy Threshold')
 ax1.grid(True)
-ax1.legend(aggResults.CellType.unique())
+ax1.legend(cellTypes)
 fig6.savefig("Plots/LineGraphAccuracyMeannModelsRegionBinaryClassifiersAcrossCellTypes.png", dpi=150)
 
 
@@ -127,7 +128,7 @@ ax1.plot(aggResults.pivot(columns = "CellType", values = "nSingleModelRegions", 
 ax1.set_ylabel('Number of single model regions')  
 ax1.set_xlabel('Accuracy Threshold')
 ax1.grid(True)
-ax1.legend(aggResults.CellType.unique())
+ax1.legend(cellTypes)
 fig7.savefig("Plots/LineGraphAccuracynSingleModelRegionsBinaryClassifiersAcrossCellTypes.png", dpi=150)
 
 
@@ -136,43 +137,47 @@ ax1.plot(aggResults.pivot(columns = "CellType", values = "MeanMinOverlapRegion",
 ax1.set_ylabel('Mean minimum overlap required')  
 ax1.set_xlabel('Accuracy Threshold')
 ax1.grid(True)
-ax1.legend(aggResults.CellType.unique())
+ax1.legend(cellTypes)
 fig8.savefig("Plots/LineGraphAccuracyMeanMinOverlapRegionBinaryClassifiersAcrossCellTypes.png", dpi=150)
 
 # mulitpanel figure
 
 fig, axs = plt.subplots(2,3)
-axs[0,0].plot(aggResults.pivot(columns = "CellType", values = "nRegions", index = "Threshold"))
+axs[0,0].plot(aggResults.pivot(columns = "CellType", values = "nRegions", index = "Threshold")[cellTypes])
 axs[0,0].set_ylabel('Number of Regions')  
 axs[0,0].set_xlabel('Accuracy Threshold')
 axs[0,0].grid(True)
-#plt.title('A', loc='left')
+axs[0,0].set_title('A', loc='left')
 
-mu = np.array(aggResults.pivot(columns = "CellType", values = "MeannModelsRegion", index = "Threshold"))
+
+mu = np.array(aggResults.pivot(columns = "CellType", values = "MeannModelsRegion", index = "Threshold")[cellTypes])
 #sigma = np.array(aggResults.pivot(columns = "Algorithm", values = "SDnModelsRegion", index = "Threshold")["BestAccuracy"])
 #ax1.fill_between(xvar, mu-sigma, mu+sigma, alpha = 0.5)
 axs[0,1].plot(xvar, mu)
 axs[0,1].set_ylabel('Mean number of models')  
 axs[0,1].set_xlabel('Accuracy Threshold')
 axs[0,1].grid(True)
-#plt.title('B', loc='left')
+axs[0,1].set_title('B', loc='left')
 
-mu = np.array(aggResults.pivot(columns = "CellType", values = "MeanRegionSize", index = "Threshold"))/100000
+
+mu = np.array(aggResults.pivot(columns = "CellType", values = "MeanRegionSize", index = "Threshold")[cellTypes])/100000
 #sigma = np.array(aggResults.pivot(columns = "Algorithm", values = "SDRegionSize", index = "Threshold")["BestAccuracy"])
 #ax1.fill_between(xvar, mu-sigma, mu+sigma, alpha = 0.5)
 axs[0,2].plot(xvar, mu)
 axs[0,2].set_ylabel('Mean region size (kb)')  
 axs[0,2].set_xlabel('Accuracy Threshold')
 axs[0,2].grid(True)
-#axs[0,2].title('C', loc='left')
+axs[0,2].set_title('C', loc='left')
 
-axs[1,0].plot(aggResults.pivot(columns = "CellType", values = "ProportionBasesInRegion", index = "Threshold"))
+
+axs[1,0].plot(aggResults.pivot(columns = "CellType", values = "ProportionBasesInRegion", index = "Threshold")[cellTypes])
 axs[1,0].set_ylabel('Proportion bases')  
 axs[1,0].set_xlabel('Accuracy Threshold')
 axs[1,0].grid(True)
-#axs[1,0].title('D', loc='left')
+axs[1,0].set_title('D', loc='left')
 
-mu = np.array(aggResults.pivot(columns = "CellType", values = "MeanInterRegionSize", index = "Threshold"))/100000
+
+mu = np.array(aggResults.pivot(columns = "CellType", values = "MeanInterRegionSize", index = "Threshold")[cellTypes])/100000
 mu[-1] = float("nan")
 #sigma = np.array(aggResults.pivot(columns = "Algorithm", values = "SDInterRegionSize", index = "Threshold")["BestAccuracy"])
 #ax1.fill_between(xvar, mu-sigma, mu+sigma, alpha = 0.5)
@@ -180,13 +185,10 @@ axs[1,1].plot(xvar, mu)
 axs[1,1].set_ylabel('Mean gap between regions (kb)')  
 axs[1,1].set_xlabel('Accuracy Threshold')
 axs[1,1].grid(True)
-#plt.title('E', loc='left')
-axs[1,1].legend(aggResults.CellType.unique())
+axs[1,1].set_title('E', loc='left')
+axs[1,1].legend(cellTypes)
 
 axs[1,2].axis('off')
-
-handles, labels = axs[0,0].get_legend_handles_labels()
-axs[1,2].legend(handles, labels)
 
 
 plt.subplots_adjust(left=0.1,
@@ -196,7 +198,7 @@ plt.subplots_adjust(left=0.1,
                     wspace=0.3, 
                     hspace=0.4)
                     
-fig.legend(lines, labels, loc = (0.5, 0), ncol=5)
-fig.set_size_inches(15, 8)
+fig.legend(bbox_to_anchor=(1.3, 0.6))
+fig.set_size_inches(16, 8)
 
 fig.savefig("Plots/MultiPanelPlotLineGraphAccuracyRegionPropertiesBinaryClassifiersAcrossCellTypes.png", dpi=150)
