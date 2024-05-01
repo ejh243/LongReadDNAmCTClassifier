@@ -153,7 +153,7 @@ ax3.grid(True)
 
 ax3.set(ylim = [0.6,1.01])
 fig5.set_size_inches(15, 4)
-fig5.subplots_adjust(bottom = 0.1, right = 0.85)
+fig5.subplots_adjust(bottom = 0.15, right = 0.85)
 fig5.savefig("Plots/LineGraphAccuracyAgainstModelPropertiesAcrossCellTypes.png", dpi=150)
 
 
@@ -188,4 +188,5 @@ plt.subplots_adjust(left=0.05,
                     wspace=0.3, 
                     hspace=0.4)
 fig6.set_size_inches(15, 4)
+fig6.subplots_adjust(bottom = 0.15)
 fig6.savefig("Plots/LineGraphModelPropertiesAgainstAccuracyAcrossCellTypes.png", dpi=150)

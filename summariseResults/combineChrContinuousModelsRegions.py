@@ -249,7 +249,7 @@ axs[1,0].plot(xvar, mu)
 axs[1,0].set_ylabel('Mean region size (kb)')  
 axs[1,0].set_xlabel('Accuracy Threshold')
 axs[1,0].grid(True)
-axs[1,0].title('C', loc='left')
+plt.title('C', loc='left')
 
 mu = np.array(aggResults.pivot(columns = "Algorithm", values = "MeanInterRegionSize", index = "Threshold")["BestAccuracy"])/1000
 mu[-1] = float("nan")

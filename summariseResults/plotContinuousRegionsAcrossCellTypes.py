@@ -8,6 +8,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from pandas.api.types import CategoricalDtype
 
+plt.rcParams.update({'font.size': 12})
+
+colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+
+
 # accuracy threshold
 thres = 0.9
 
@@ -145,7 +150,7 @@ axs[0,0].plot(aggResults.pivot(columns = "CellType", values = "nRegions", index 
 axs[0,0].set_ylabel('Number of Regions')  
 axs[0,0].set_xlabel('Accuracy Threshold')
 axs[0,0].grid(True)
-#plt.title('A', loc='left')
+axs[0,0].set_title('A', loc='left')
 
 mu = np.array(aggResults.pivot(columns = "CellType", values = "MeannModelsRegion", index = "Threshold"))
 #sigma = np.array(aggResults.pivot(columns = "Algorithm", values = "SDnModelsRegion", index = "Threshold")["BestAccuracy"])
@@ -154,7 +159,7 @@ axs[0,1].plot(xvar, mu)
 axs[0,1].set_ylabel('Mean number of models')  
 axs[0,1].set_xlabel('Accuracy Threshold')
 axs[0,1].grid(True)
-#plt.title('B', loc='left')
+axs[0,1].set_title('B', loc='left')
 
 mu = np.array(aggResults.pivot(columns = "CellType", values = "MeanRegionSize", index = "Threshold"))/100000
 #sigma = np.array(aggResults.pivot(columns = "Algorithm", values = "SDRegionSize", index = "Threshold")["BestAccuracy"])
@@ -163,13 +168,13 @@ axs[0,2].plot(xvar, mu)
 axs[0,2].set_ylabel('Mean region size (kb)')  
 axs[0,2].set_xlabel('Accuracy Threshold')
 axs[0,2].grid(True)
-#axs[0,2].title('C', loc='left')
+axs[0,2].set_title('C', loc='left')
 
 axs[1,0].plot(aggResults.pivot(columns = "CellType", values = "ProportionBasesInRegion", index = "Threshold"))
 axs[1,0].set_ylabel('Proportion bases')  
 axs[1,0].set_xlabel('Accuracy Threshold')
 axs[1,0].grid(True)
-#axs[1,0].title('D', loc='left')
+axs[1,0].set_title('D', loc='left')
 
 mu = np.array(aggResults.pivot(columns = "CellType", values = "MeanInterRegionSize", index = "Threshold"))/100000
 mu[-1] = float("nan")
@@ -179,19 +184,16 @@ axs[1,1].plot(xvar, mu)
 axs[1,1].set_ylabel('Mean gap between regions (kb)')  
 axs[1,1].set_xlabel('Accuracy Threshold')
 axs[1,1].grid(True)
-#plt.title('E', loc='left')
-axs[1,1].legend(aggResults.CellType.unique())
+axs[1,1].set_title('E', loc='left')
+axs[1,1].legend(cellTypes)
 
 axs[1,2].axis('off')
-
-handles, labels = axs[0,0].get_legend_handles_labels()
-#axs[1,2].legend(handles, labels)
 
 
 plt.subplots_adjust(left=0.1,
                     bottom=0.12, 
                     right=0.95, 
-                    top=0.95, 
+                    top=0.92, 
                     wspace=0.3, 
                     hspace=0.4)
                     
@@ -199,3 +201,4 @@ fig.legend(bbox_to_anchor=(1.3, 0.6))
 fig.set_size_inches(16, 8)
 
 fig.savefig("Plots/MultiPanelPlotLineGraphAccuracyRegionPropertiesContinuousClassifiersAcrossCellTypes.png", dpi=150)
+
