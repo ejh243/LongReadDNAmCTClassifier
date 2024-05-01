@@ -23,11 +23,17 @@ python CellTypeClassifierBinaryDNAm.py ${chr} ${modelType} ${trainPath} ${outPat
 Arguments are:
 
 `chr` chromosome as an integer to process (need to run once for each chromosome)
+
 `modelType` one of "KNN", "SVM", "NBayes" or "RandFor"
+
 `trainPath` full path to folder of training data - formatted as described above
+
 `outPath` full to folder where output should be saved
+
 `cellCol` column number as am integer of colanno.csv that contains the cell type labels
+
 `nobs` number of observations per cell type to synthesise for the train and test data
+
 `array` TRUE/FALSE depending if observed DNAm data is generated from a microarray or not.
 
 Output is a text file.
@@ -41,9 +47,13 @@ python CellTypeClassifierContinuousDNAm.py ${chr} ${modelType} ${trainPath} ${ou
 Arguments are:
 
 `chr` chromosome as an integer to process (need to run once for each chromosome)
+
 `modelType` one of "KNN", "SVM", "NBayes" or "RandFor"
+
 `trainPath` full path to folder of training data - formatted as described above
+
 `outPath` full to folder where output should be saved
+
 `cellCol` column number as am integer of colanno.csv that contains the cell type labels
 
 Output is a text file.
@@ -61,6 +71,7 @@ takes output from `CellTypeClassifierBinaryDNAm.py` and collates across chr to c
 Arguments are:
 
 `resultsPath` full path to folder with chromosome level results 
+
 `nCT` number of cell types predicted
 
 ```
@@ -72,6 +83,7 @@ takes output from `CellTypeClassifierBinaryDNAm.py` which has been run across di
 Arguments are:
 
 `resultsPath` full path to folder with folders for results of each cell type grouping
+
 `cellTypes` list of names of folders with each cell type grouping with space between each grouping e.g. "Lympocytes" "Bcells"
 
 Output is put into a folder called `Plots` in `resultsPath`
@@ -85,7 +97,9 @@ takes output from `CellTypeClassifierBinaryDNAm.py` and collapses into regions
 Arguments are:
 
 `resultsPath` full path to folder with chromosome level results 
+
 `chr` chromosome number to process (needs to be run sperartely for each chromosome)
+
 `nCT` number of cell types predicted
 
 ```
@@ -96,6 +110,7 @@ takes output from `mergeBinaryModelsRegionsByChr`  which has been run across dif
 Arguments are:
 
 `resultsPath` full path to folder with chromosome level results 
+
 `cellTypes` list of names of folders with each cell type grouping with space between each grouping e.g. "Lympocytes" "Bcells"
 
 Output is put into a folder called `Plots` in `resultsPath`
@@ -112,6 +127,7 @@ takes output from `CellTypeClassifierContinuousDNAm.py` and collates across chr 
 Arguments are:
 
 `resultsPath` full path to folder with chromosome level results 
+
 `nCT` number of cell types predicted
 
 ```
@@ -123,6 +139,7 @@ takes output from `CellTypeClassifierContinuousDNAm.py` which has been run acros
 Arguments are:
 
 `resultsPath` full path to folder with folders for results of each cell type grouping
+
 `cellTypes` list of names of folders with each cell type grouping with space between each grouping e.g. "Lympocytes" "Bcells"
 
 Output is put into a folder called `Plots` in `resultsPath`
@@ -136,7 +153,9 @@ takes output from `CellTypeClassifierContinuousDNAm.py` and collapses into regio
 Arguments are:
 
 `resultsPath` full path to folder with chromosome level results 
+
 `chr` chromosome number to process (needs to be run sperartely for each chromosome)
+
 `nCT` number of cell types predicted
 
 ```
@@ -159,6 +178,7 @@ takes output from `mergeContinuousModelsRegionsByChr.py`  which has been run acr
 Arguments are:
 
 `resultsPath` full path to folder with chromosome level results 
+
 `cellTypes` list of names of folders with each cell type grouping with space between each grouping e.g. "Lympocytes" "Bcells"
 
 Output is put into a folder called `Plots` in `resultsPath`
