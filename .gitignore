@@ -1,5 +1,6 @@
 # all log files
 LogFiles/*
+jobSubmission/LogFiles/*
 
 # all profiling files
 mprof*
