@@ -6,12 +6,14 @@
 #SBATCH --nodes=1 # specify number of nodes.
 #SBATCH --ntasks-per-node=16 # specify number of processors per node
 #SBATCH --mail-type=END # send email at job completion 
-#SBATCH --output=LogFiles/testONTData-%A.o
-#SBATCH --error=LogFiles/testONTData-%A.e
-#SBATCH --job-name=testONTData-%A.e
+#SBATCH --output=LogFiles/testONTData-%A_%a.o
+#SBATCH --error=LogFiles/testONTData-%A_%a.e
+#SBATCH --job-name=testONTData-%A_%a.e
+#SBATCH --array=1-22
 
 
-## loops through chromosomes and model types to select regions with good enough accuracy for testing on ONT data
+## submits job for each chromosome
+CHR=${SLURM_ARRAY_TASK_ID}
 
 # SCENARIO PARAMETERS
 NOBS=100
@@ -46,39 +48,39 @@ echo -e "==============================\n"
 
 cd ~/LongReadDNAmCTClassifier/
 
+	echo -e "\n=============================="
+	echo -e " PROCESSING CHROMOSOME: ${CHR}"
+	echo -e "==============================\n"
+
 # select regions with good enough accuracy 
 # runs per chr and model output folder, but does all models together.
 # outputs one file per modelType, cell type prediction, chr
 echo -e "\n=============================="
 echo -e "  SELECTING TESTING REGIONS"
 echo -e "==============================\n"
-for CHR in {1..22}; do
-    python3.9 summariseResults/writeRegionsToFile.py ${RESULTSPATH} ${CHR} ${NCT}
-done
+
+python3.9 summariseResults/writeRegionsToFile.py ${RESULTSPATH} ${CHR} ${NCT}
+
 
 
 
 # loop through model types and predict cell types for all reads in all regions that passed the threshold for one chromosome and one model type
 for MLTYPE in KNN SVM NBayes; do
     TESTREADPATH=${OUTDIR}/Lymphocytes/${MLTYPE}/
-    for CHR in {1..22}; do
-        REGIONS=${RESULTSPATH}MergedPredictiveRegionsThreshold0.95Model${MLTYPE}Chr${CHR}.csv
-        echo -e "\n=============================="
-        echo -e "  STARTING TESTING FOR ${MLTYPE} MODEL"
-        echo -e "  CHROMOSOME: ${CHR}"
-        echo -e "==============================\n"
+ 
+	REGIONS=${RESULTSPATH}MergedPredictiveRegionsThreshold0.95Model${MLTYPE}Chr${CHR}.csv
+	echo -e "\n=============================="
+	echo -e "  STARTING TESTING FOR ${MLTYPE} MODEL"
+	echo -e "  CHROMOSOME: ${CHR}"
+	echo -e "==============================\n"
 
-        # Extract read level ONT data for one bam file all regions for one regions file (i.e. one ML algorithm for one chr)
-        formatFiles/formatONTData.sh ${MODKITPATH} ${BAMPATH} ${OUTDIR} ${REGIONS}
+	# Extract read level ONT data for one bam file all regions for one regions file (i.e. one ML algorithm for one chr)
+	formatFiles/formatONTData.sh ${MODKITPATH} ${BAMPATH} ${OUTDIR} ${REGIONS}
 
-        # train and test these regions
-        # predicts all reads for one region for one model type
-		find "$TESTREADPATH" -maxdepth 1 -name "*.tsv" | while read -r testFile; do
-			python3.9 testCellTypeClassifierONTData.py "$TRAINPATH" "$testFile" "$CTCOL" "$NOBS"
-		done
-
-		
-		
-    done
+	# train and test these regions
+	# predicts all reads for one region for one model type
+	find "$TESTREADPATH" -maxdepth 1 -name "*.tsv" | while read -r testFile; do
+		python3.9 testCellTypeClassifierONTData.py "$TRAINPATH" "$testFile" "$CTCOL" "$NOBS"
+	done
 done
 
