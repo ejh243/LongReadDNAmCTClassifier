@@ -13,7 +13,7 @@
 
 
 ## submits job for each chromosome
-CHR=${SLURM_ARRAY_TASK_ID}
+#CHR=${SLURM_ARRAY_TASK_ID}
 
 # SCENARIO PARAMETERS
 NOBS=100
@@ -22,22 +22,24 @@ NOBS=100
 MODKITPATH=~/software/modkit_v0.6.1_481e3c9/modkit
 
 # Training data 
-# path to beta matrices with DNAm data to train ML models
+# Path to beta matrices with DNAm data to train ML models
 TRAINPATH=$1
 
 # Test data
-# path to bam file with ONT data to extract read level statistics for testing ML models
+# Path to bam file with ONT data to extract read level statistics for testing ML models
 BAMPATH=$2
 
 # Model data
-# path to output folder from model simulations to select regions for testing on ONT data
+# Path to output folder from model simulations to select regions for testing on ONT data
 RESULTSPATH=$3
 NCT=$4
 CTCOL=$5
-MODELNAME=$(basename $RESULTSPATH/)
+MODELNAME=$(basename "${RESULTSPATH%/}") # which cell type output is predicted
 
-# Output paths
-# path to output folder for read level statistics extracted from ONT data and model predictions for these reads
+# Output directory for read-level DNAm information, & model predictions
+# Model information will be derived automatically from RESULTSPATH.
+# Top-level results directory only; cell-type model and ML-algorithm subfolders will be appended automatically
+# Predictions will be found in ${OUTDIR}/${MODELNAME}/${MLTYPE}/PredictionOutput/
 OUTDIR=$6
 
 module load Miniconda3
@@ -49,9 +51,9 @@ echo -e "==============================\n"
 
 cd ~/LongReadDNAmCTClassifier/
 
-	echo -e "\n=============================="
-	echo -e " PROCESSING CHROMOSOME: ${CHR}"
-	echo -e "==============================\n"
+echo -e "\n=============================="
+echo -e " PROCESSING CHROMOSOME: ${CHR}"
+echo -e "==============================\n"
 
 # select regions with good enough accuracy 
 # runs per chr and model output folder, but does all models together.
@@ -59,6 +61,7 @@ cd ~/LongReadDNAmCTClassifier/
 echo -e "\n=============================="
 echo -e "  SELECTING TESTING REGIONS"
 echo -e "==============================\n"
+
 
 python3.9 summariseResults/writeRegionsToFile.py ${RESULTSPATH} ${CHR} ${NCT}
 
