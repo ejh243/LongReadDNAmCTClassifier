@@ -79,7 +79,7 @@ for MLTYPE in KNN SVM NBayes; do
 
 	# train and test these regions
 	# predicts all reads for one region for one model type
-	find "$TESTREADPATH" -maxdepth 1 -name "*.tsv" | while read -r testFile; do
+	find "$TESTREADPATH" -maxdepth 1 -name "*chr$CHR*.tsv" | while read -r testFile; do
 		python3.9 testCellTypeClassifierONTData.py "$TRAINPATH" "$testFile" "$CTCOL" "$NOBS"
 	done
 done
@@ -88,3 +88,5 @@ echo -e "\n=============================="
 echo -e "  PREDICTIONS COMPLETE "
 echo -e "  TIDYING UP INTERMEDIATE FILES "
 echo -e "==============================\n"
+
+find "$TESTREADPATH" -maxdepth 1 -name "*chr$CHR*.tsv" -print0 | xargs -0 rm
