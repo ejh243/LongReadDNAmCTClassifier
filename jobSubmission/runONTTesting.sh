@@ -73,9 +73,12 @@ for MLTYPE in KNN SVM NBayes; do
 
         # train and test these regions
         # predicts all reads for one region for one model type
-        ls ${TESTREADPATH}*.tsv | while read testFile; do 
-            python3.9 testCellTypeClassifierONTData.py ${TRAINPATH} ${testFile} ${CTCOL} ${NOBS} 
-        done
+		find "$TESTREADPATH" -maxdepth 1 -name "*.tsv" | while read -r testFile; do
+			python3.9 testCellTypeClassifierONTData.py "$TRAINPATH" "$testFile" "$CTCOL" "$NOBS"
+		done
+
+		
+		
     done
 done
 
