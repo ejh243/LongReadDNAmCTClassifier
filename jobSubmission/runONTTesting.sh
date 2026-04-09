@@ -34,6 +34,7 @@ BAMPATH=$2
 RESULTSPATH=$3
 NCT=$4
 CTCOL=$5
+MODELNAME=$(basename $RESULTSPATH/)
 
 # Output paths
 # path to output folder for read level statistics extracted from ONT data and model predictions for these reads
@@ -66,7 +67,7 @@ python3.9 summariseResults/writeRegionsToFile.py ${RESULTSPATH} ${CHR} ${NCT}
 
 # loop through model types and predict cell types for all reads in all regions that passed the threshold for one chromosome and one model type
 for MLTYPE in KNN SVM NBayes; do
-    TESTREADPATH=${OUTDIR}/Lymphocytes/${MLTYPE}/
+    TESTREADPATH=${OUTDIR}/${MODELNAME}/${MLTYPE}/
  
 	REGIONS=${RESULTSPATH}MergedPredictiveRegionsThreshold0.95Model${MLTYPE}Chr${CHR}.csv
 	echo -e "\n=============================="
@@ -83,3 +84,7 @@ for MLTYPE in KNN SVM NBayes; do
 	done
 done
 
+echo -e "\n=============================="
+echo -e "  PREDICTIONS COMPLETE "
+echo -e "  TIDYING UP INTERMEDIATE FILES "
+echo -e "==============================\n"
