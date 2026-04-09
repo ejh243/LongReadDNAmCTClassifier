@@ -71,7 +71,6 @@ for MLTYPE in KNN SVM NBayes; do
 	REGIONS=${RESULTSPATH}MergedPredictiveRegionsThreshold0.95Model${MLTYPE}Chr${CHR}.csv
 	echo -e "\n=============================="
 	echo -e "  STARTING TESTING FOR ${MLTYPE} MODEL"
-	echo -e "  CHROMOSOME: ${CHR}"
 	echo -e "==============================\n"
 
 	# Extract read level ONT data for one bam file all regions for one regions file (i.e. one ML algorithm for one chr)
