@@ -25,8 +25,11 @@ mkdir -p ${RESDIR}
 ## extract read level statistics for each region
 tail -n +2 ${REGIONS} | while IFS=',' read -r chr start end _; do
     region="chr${chr}:${start}-${end}"
-    echo "Extracting region: " $region "for sample " ${sample}
-    ${MODKITPATH} extract full ${BAMPATH} ${RESDIR}/${sample}_${region}.tsv --region ${region}
+    # check if region already extracted
+    if [ ! -f "${RESDIR}/${sample}_${region}.tsv" ]; then
+        echo "Extracting region: " $region "for sample " ${sample}
+        ${MODKITPATH} extract full ${BAMPATH} ${RESDIR}/${sample}_${region}.tsv --region ${region}
+    fi
 done
 
 echo "Completed"

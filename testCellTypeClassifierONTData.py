@@ -41,6 +41,11 @@ testBasenameNoExt = os.path.splitext(testBasename)[0]  # remove .tsv
 sample, region = testBasenameNoExt.rsplit("_", 1)  # split into two parts
 chr=region.split(":")[0].removeprefix("chr")  # extract chromosome from region
 
+# test if region already tested
+if os.path.exists(testDir + "/PredictionOutput/" + sample + "_" + region + "_modelPredictions.csv"):
+    print("Region " + region + " already tested. Skipping.")
+    sys.exit()
+
 ## load training data
 betas = pd.read_csv(trainDataPath + "betas_chr" + str(chr) + ".csv").values
 pheno = pd.read_csv(trainDataPath + "colanno.csv").values
