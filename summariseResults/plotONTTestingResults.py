@@ -136,7 +136,7 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         # only plot for density bins with at least 10 reads tested
         accuracyByCpGDensity = accuracyByCpGDensity[accuracyByCpGDensity.Correct + accuracyByCpGDensity.Incorrect >= 10]
         plt.figure(figsize = (6,4))
-        plt.plot(accuracyByCpGDensity.cpg_density, accuracyByCpGDensity.Accuracy, color = colors)
+        plt.plot(accuracyByCpGDensity.cpg_density, accuracyByCpGDensity.Accuracy, color = colors[1])
         plt.ylim(0,1)
         plt.ylabel("Accuracy")
         plt.xlabel("CpG Density in Read")
