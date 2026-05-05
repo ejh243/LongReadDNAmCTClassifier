@@ -9,7 +9,7 @@ import sys
 resultsPath=sys.argv[1]
 
 # Get all CSV files
-files = glob.glob(f"{resultsPath}/MergedPredictiveRegions*.csv")
+files = glob.glob(f"{resultsPath}/*/MergedPredictiveRegions*.csv")
 
 # Load and concatenate
 regions = [pd.read_csv(f) for f in files]
@@ -21,4 +21,5 @@ merged = gr.merge()
 merged_df = merged.as_df()
 
 # Save as bed file
-merged_df.to_csv(f"{resultsPath}/MergedPredictiveRegions.bed", index=False, sep="\t")
+merged_df.to_csv(f"{resultsPath}/MergedPredictiveRegions.bed", index=False, sep="\t",
+    header=False)
