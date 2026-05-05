@@ -1,5 +1,5 @@
 # First argument is the path to the read level results file (output of mergeONTTestingResults.py)
-# Second argument is the cell type we are testing predictions for (e.g. "Lymphocyte", "Granulocyte", "Monocyte")
+# Second argument is the path to the read metadata file (e.g. read length, number of CpGs, etc.)
 
 # load libraries
 import os
@@ -15,14 +15,13 @@ plt.rcParams.update({'font.size': 12})
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
 resultsPath  = sys.argv[1]
-#cellPredict = sys.argv[2] # which cell type are we testing predictions for? (e.g. "Lymphocyte", "Granulocyte", "Monocyte")
-readDataFile = sys.argv[3] # file with read metadata (e.g. read length, number of CpGs, etc.)
-#mlModel = sys.argv[4] # which machine learning model was used
- # load read metadata first 100000 rows
-readData = pd.read_csv(readDataFile, header = 0, names = ("read_id","chrom","alignment_start","read_length"), nrows = 20000000, sep = "\t")
+readDataFile = sys.argv[2] # file with read metadata (e.g. read length, number of CpGs, etc.)
+
+
+ # load read metadata 
+readData = pd.read_csv(readDataFile, header = 0, names = ("read_id","chrom","alignment_start","read_length"), sep = "\t")
 # bin read length into 500 bp bins
 readData["read_length_bin"] = pd.cut(readData.read_length, bins = np.arange(0, readData.read_length.max() + 500, 500), right = False)
-
 
 
 for mlModel in ["SVM", "KNN", "NBayes"]:
@@ -72,8 +71,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         accuracyByCpGs = results.groupby(["nCpG", "correct_prediction"]).size().unstack(fill_value = 0)
         accuracyByCpGs["Accuracy"] = accuracyByCpGs.Correct / (accuracyByCpGs.Correct + accuracyByCpGs.Incorrect)
         accuracyByCpGs = accuracyByCpGs.reset_index()   
-        # only plot for CpG counts with at least 10 reads tested
-        accuracyByCpGs = accuracyByCpGs[accuracyByCpGs.Correct + accuracyByCpGs.Incorrect >= 10]
+        # only plot for CpG counts with at least 100 reads tested
+        accuracyByCpGs = accuracyByCpGs[accuracyByCpGs.Correct + accuracyByCpGs.Incorrect >= 100]
         plt.figure(figsize = (6,4))
         plt.plot(accuracyByCpGs.nCpG, accuracyByCpGs.Accuracy, color = colors[1])
         plt.ylim(0,1)
@@ -85,8 +84,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         accuracyByCellTypeCpGs = results.groupby(["sample_type", "nCpG", "correct_prediction"]).size().unstack(fill_value = 0)
         accuracyByCellTypeCpGs["Accuracy"] = accuracyByCellTypeCpGs.Correct / (accuracyByCellTypeCpGs.Correct + accuracyByCellTypeCpGs.Incorrect)
         accuracyByCellTypeCpGs = accuracyByCellTypeCpGs.reset_index()
-        # only plot for CpG counts with at least 10 reads tested
-        accuracyByCellTypeCpGs = accuracyByCellTypeCpGs[accuracyByCellTypeCpGs.Correct + accuracyByCellTypeCpGs.Incorrect >= 10]
+        # only plot for CpG counts with at least 100 reads tested
+        accuracyByCellTypeCpGs = accuracyByCellTypeCpGs[accuracyByCellTypeCpGs.Correct + accuracyByCellTypeCpGs.Incorrect >= 100]
         plt.figure(figsize = (8,6))
         for i, cellType in enumerate(accuracyByCellTypeCpGs.sample_type.unique()):
             subset = accuracyByCellTypeCpGs[accuracyByCellTypeCpGs.sample_type == cellType]
@@ -102,8 +101,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         accuracyByReadLength["bin_midpoint"] = accuracyByReadLength.index.map(lambda x: (x.left + x.right) / 2)
         accuracyByReadLength["Accuracy"] = accuracyByReadLength.Correct / (accuracyByReadLength.Correct + accuracyByReadLength.Incorrect)
         accuracyByReadLength = accuracyByReadLength.reset_index()
-        # only plot for read length bins with at least 10 reads tested
-        accuracyByReadLength = accuracyByReadLength[accuracyByReadLength.Correct + accuracyByReadLength.Incorrect >= 10]
+        # only plot for read length bins with at least 100 reads tested
+        accuracyByReadLength = accuracyByReadLength[accuracyByReadLength.Correct + accuracyByReadLength.Incorrect >= 100]
         plt.figure(figsize = (6,4))
         plt.plot(accuracyByReadLength.bin_midpoint, accuracyByReadLength.Accuracy, color = colors[2])
         plt.xticks(rotation = 45)
@@ -118,8 +117,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         # add bin midpoints for plotting
         accuracyByCellTypeReadLength["bin_midpoint"] = accuracyByCellTypeReadLength.index.get_level_values("read_length_bin").map(lambda x: (x.left + x.right) / 2)
         accuracyByCellTypeReadLength = accuracyByCellTypeReadLength.reset_index()
-        # only plot for read length bins with at least 10 reads tested
-        accuracyByCellTypeReadLength = accuracyByCellTypeReadLength[accuracyByCellTypeReadLength.Correct + accuracyByCellTypeReadLength.Incorrect >= 10]
+        # only plot for read length bins with at least 100 reads tested
+        accuracyByCellTypeReadLength = accuracyByCellTypeReadLength[accuracyByCellTypeReadLength.Correct + accuracyByCellTypeReadLength.Incorrect >= 100]
         plt.figure(figsize = (8,6))
         for i, cellType in enumerate(accuracyByCellTypeReadLength.sample_type.unique()):    
             subset = accuracyByCellTypeReadLength[accuracyByCellTypeReadLength.sample_type == cellType]
@@ -141,8 +140,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         accuracyByCpGDensity["bin_midpoint"] = accuracyByCpGDensity.index.get_level_values("cpg_density_bin").map(lambda x: (x.left + x.right) / 2)
         accuracyByCpGDensity["Accuracy"] = accuracyByCpGDensity.Correct / (accuracyByCpGDensity.Correct + accuracyByCpGDensity.Incorrect)
         accuracyByCpGDensity = accuracyByCpGDensity.reset_index()
-        # only plot for density bins with at least 10 reads tested
-        accuracyByCpGDensity = accuracyByCpGDensity[accuracyByCpGDensity.Correct + accuracyByCpGDensity.Incorrect >= 10]
+        # only plot for density bins with at least 100 reads tested
+        accuracyByCpGDensity = accuracyByCpGDensity[accuracyByCpGDensity.Correct + accuracyByCpGDensity.Incorrect >= 100]
         plt.figure(figsize = (6,4))
         plt.plot(accuracyByCpGDensity.bin_midpoint, accuracyByCpGDensity.Accuracy, color = colors[1])
         plt.ylim(0,1)
@@ -156,8 +155,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         # add bin midpoints for plotting
         accuracyByCellTypeCpGDensity["bin_midpoint"] = accuracyByCellTypeCpGDensity.index.get_level_values("cpg_density_bin").map(lambda x: (x.left + x.right) / 2)
         accuracyByCellTypeCpGDensity = accuracyByCellTypeCpGDensity.reset_index()
-        # only plot for density bins with at least 10 reads tested
-        accuracyByCellTypeCpGDensity = accuracyByCellTypeCpGDensity[accuracyByCellTypeCpGDensity.Correct + accuracyByCellTypeCpGDensity.Incorrect >= 10]
+        # only plot for density bins with at least 100 reads tested
+        accuracyByCellTypeCpGDensity = accuracyByCellTypeCpGDensity[accuracyByCellTypeCpGDensity.Correct + accuracyByCellTypeCpGDensity.Incorrect >= 100]
         plt.figure(figsize = (8,6))
         for i, cellType in enumerate(accuracyByCellTypeCpGDensity.sample_type.unique()):    
             subset = accuracyByCellTypeCpGDensity[accuracyByCellTypeCpGDensity.sample_type == cellType]
