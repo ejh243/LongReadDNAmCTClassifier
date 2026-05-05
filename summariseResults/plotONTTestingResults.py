@@ -19,7 +19,7 @@ resultsPath  = sys.argv[1]
 readDataFile = sys.argv[3] # file with read metadata (e.g. read length, number of CpGs, etc.)
 #mlModel = sys.argv[4] # which machine learning model was used
  # load read metadata first 100000 rows
-readData = pd.read_csv(readDataFile, header = 0, names = ("read_id","chrom","alignment_start","read_length"), nrows = 10000000, sep = "\t")
+readData = pd.read_csv(readDataFile, header = 0, names = ("read_id","chrom","alignment_start","read_length"), nrows = 20000000, sep = "\t")
 # bin read length into 500 bp bins
 readData["read_length_bin"] = pd.cut(readData.read_length, bins = np.arange(0, readData.read_length.max() + 500, 500), right = False)
 
@@ -115,6 +115,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         # plot by read length and cell type
         accuracyByCellTypeReadLength = results.groupby(["sample_type", "read_length_bin", "correct_prediction"]).size().unstack(fill_value = 0)
         accuracyByCellTypeReadLength["Accuracy"] = accuracyByCellTypeReadLength.Correct / (accuracyByCellTypeReadLength.Correct + accuracyByCellTypeReadLength.Incorrect)           
+        # add bin midpoints for plotting
+        accuracyByCellTypeReadLength["bin_midpoint"] = accuracyByCellTypeReadLength.index.get_level_values("read_length_bin").map(lambda x: (x.left + x.right) / 2)
         accuracyByCellTypeReadLength = accuracyByCellTypeReadLength.reset_index()
         # only plot for read length bins with at least 10 reads tested
         accuracyByCellTypeReadLength = accuracyByCellTypeReadLength[accuracyByCellTypeReadLength.Correct + accuracyByCellTypeReadLength.Incorrect >= 10]
@@ -136,7 +138,7 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         results["cpg_density_bin"] = pd.cut(results.cpg_density, bins = np.arange(0, results.cpg_density.max() + 100, 100), right = False)
         accuracyByCpGDensity = results.groupby(["cpg_density_bin", "correct_prediction"]).size().unstack(fill_value = 0)
         # add bin midpoints for plotting
-        accuracyByCpGDensity["bin_midpoint"] = accuracyByCpGDensity.index.map(lambda x: (x.left + x.right) / 2)
+        accuracyByCpGDensity["bin_midpoint"] = accuracyByCpGDensity.index.get_level_values("cpg_density_bin").map(lambda x: (x.left + x.right) / 2)
         accuracyByCpGDensity["Accuracy"] = accuracyByCpGDensity.Correct / (accuracyByCpGDensity.Correct + accuracyByCpGDensity.Incorrect)
         accuracyByCpGDensity = accuracyByCpGDensity.reset_index()
         # only plot for density bins with at least 10 reads tested
@@ -151,6 +153,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         # plot by density of methylation sites in the read and cell type
         accuracyByCellTypeCpGDensity = results.groupby(["sample_type", "cpg_density_bin", "correct_prediction"]).size().unstack(fill_value = 0)
         accuracyByCellTypeCpGDensity["Accuracy"] = accuracyByCellTypeCpGDensity.Correct / (accuracyByCellTypeCpGDensity.Correct + accuracyByCellTypeCpGDensity.Incorrect)
+        # add bin midpoints for plotting
+        accuracyByCellTypeCpGDensity["bin_midpoint"] = accuracyByCellTypeCpGDensity.index.get_level_values("cpg_density_bin").map(lambda x: (x.left + x.right) / 2)
         accuracyByCellTypeCpGDensity = accuracyByCellTypeCpGDensity.reset_index()
         # only plot for density bins with at least 10 reads tested
         accuracyByCellTypeCpGDensity = accuracyByCellTypeCpGDensity[accuracyByCellTypeCpGDensity.Correct + accuracyByCellTypeCpGDensity.Incorrect >= 10]
