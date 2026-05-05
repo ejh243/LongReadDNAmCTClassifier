@@ -182,3 +182,92 @@ Arguments are:
 `cellTypes` list of names of folders with each cell type grouping with space between each grouping e.g. "Lympocytes" "Bcells"
 
 Output is put into a folder called `Plots` in `resultsPath`
+
+## Testing with ONT data
+
+### Run tests
+
+```
+python summariseResults/writeRegionsToFile.py ${resultsPath} ${chr} ${nct}
+```
+
+takes output from `mergeBinaryModelsRegionsByChr` and extracts regions with predictive accuracy > 0.95 as basis for testing with ONT data
+
+Arguments are:
+
+`resultsPath` full path to folder with chromosome level results 
+
+`chr` chromosome to extract results for
+
+`nct` number of cell types predicted (i.e. 2 for binary outcomes)
+
+Output is a csv file in `resultsPath`
+
+```
+formatFiles/formatONTData.sh ${MODKITPATH} ${BAMPATH} ${OUTDIR} ${REGIONS}
+```
+
+Extracts read‑level methylation calls from Oxford Nanopore modified BAM files for a user‑defined set of genomic regions, using modkit. Assumes bam files are <sampleName>.bam
+
+Arguments are:
+
+`modkitpath` path to modkit
+
+`bampath` path to folder with ONT modified bam files
+
+`outdir` path to folder where output will be written
+
+`regions` path to csv with selected regions for testing. Assumes located in folder `{predictCT}/${mlType}/`, where `predictCT` is name of prediction model and `mlType` is ML algorithm. 
+
+Output is tsv file written to outdir is `{predictCT}/${mlType}/` where cell type model label and ML algorithm are extracted from `regions` file path. Region and sample name are automatically added to the output file path following extraction from input files. 
+
+```
+python3.9 testCellTypeClassifierONTData.py $trainPath $testFile $cellCol $nobs
+```
+
+Arguments are:
+
+`trainPath` full path to folder of training data - formatted as described above
+
+`testFile` path to tsv file of read level DNA methylation calls (output from previous step)
+ 
+`cellCol` column number as am integer of colanno.csv that contains the cell type labels
+
+`nobs` number of observations per cell type to synthesise for the train data
+
+Output is a csv file in a folder `PredictionOutput` created in the folder where `testFile` is located. 
+
+### Summarise results
+
+```
+python formatFiles/mergePredictiveRegions.py ${resultsPath} 
+```
+takes csv files with preductive regions found in subfolders of `resultsPath` and merges into overlapping set
+
+Output is a bed file
+
+```
+sh Misc/extractReadMetaDataFromBam.sh ${bamPath} ${regionsBed}
+```
+
+extract read level parameters from bam files for read that overlap predictive regions
+
+Arguments are:
+
+`bamPath` path to folder with ONT modified bam files
+
+`regionsBed` path to bed file with list of regions included in testing
+
+Output is a text file in `bamPath`
+
+```
+sh summariseResults/collateModelPredictions.sh $resultsPath
+```
+
+Collates output in specified folder and merges into single file extracting region and sample name from filename.
+
+Arguments are
+
+`resultsPath`
+
+Output is csv file 
