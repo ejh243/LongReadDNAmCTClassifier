@@ -98,12 +98,14 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         plt.savefig(outPath + "/ReadLevelPredictionAccuracyByCellTypeAndCpGs.png", bbox_inches = "tight")
         # plot by read length
         accuracyByReadLength = results.groupby(["read_length_bin", "correct_prediction"]).size().unstack(fill_value = 0)
+        # add bin midpoints for plotting
+        accuracyByReadLength["bin_midpoint"] = accuracyByReadLength.index.map(lambda x: (x.left + x.right) / 2)
         accuracyByReadLength["Accuracy"] = accuracyByReadLength.Correct / (accuracyByReadLength.Correct + accuracyByReadLength.Incorrect)
         accuracyByReadLength = accuracyByReadLength.reset_index()
         # only plot for read length bins with at least 10 reads tested
         accuracyByReadLength = accuracyByReadLength[accuracyByReadLength.Correct + accuracyByReadLength.Incorrect >= 10]
         plt.figure(figsize = (6,4))
-        plt.plot(accuracyByReadLength.read_length_bin.astype(str), accuracyByReadLength.Accuracy, color = colors[2])
+        plt.plot(accuracyByReadLength.bin_midpoint, accuracyByReadLength.Accuracy, color = colors[2])
         plt.xticks(rotation = 45)
         plt.ylim(0,1)
         plt.ylabel("Accuracy")
@@ -119,7 +121,7 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         plt.figure(figsize = (8,6))
         for i, cellType in enumerate(accuracyByCellTypeReadLength.sample_type.unique()):    
             subset = accuracyByCellTypeReadLength[accuracyByCellTypeReadLength.sample_type == cellType]
-            plt.plot(subset.read_length_bin.astype(str), subset.Accuracy, label = cellType, color = colors[i])
+            plt.plot(subset.bin_midpoint, subset.Accuracy, label = cellType, color = colors[i])
         plt.legend()
         plt.xticks(rotation = 45)
         plt.ylim(0,1)
@@ -129,21 +131,25 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         plt.savefig(outPath + "/ReadLevelPredictionAccuracyByCellTypeAndReadLength.png", bbox_inches = "tight")
         # plot by density of methylation sites in the read
         # calculate density of methylation sites in the read
-        results["cpg_density"] = results.nCpG / results.read_length
-        accuracyByCpGDensity = results.groupby(["cpg_density", "correct_prediction"]).size().unstack(fill_value = 0)
+        results["cpg_density"] = results.read_length / results.nCpG
+        # bin density into bins of 100bp
+        results["cpg_density_bin"] = pd.cut(results.cpg_density, bins = np.arange(0, results.cpg_density.max() + 100, 100), right = False)
+        accuracyByCpGDensity = results.groupby(["cpg_density_bin", "correct_prediction"]).size().unstack(fill_value = 0)
+        # add bin midpoints for plotting
+        accuracyByCpGDensity["bin_midpoint"] = accuracyByCpGDensity.index.map(lambda x: (x.left + x.right) / 2)
         accuracyByCpGDensity["Accuracy"] = accuracyByCpGDensity.Correct / (accuracyByCpGDensity.Correct + accuracyByCpGDensity.Incorrect)
         accuracyByCpGDensity = accuracyByCpGDensity.reset_index()
         # only plot for density bins with at least 10 reads tested
         accuracyByCpGDensity = accuracyByCpGDensity[accuracyByCpGDensity.Correct + accuracyByCpGDensity.Incorrect >= 10]
         plt.figure(figsize = (6,4))
-        plt.plot(accuracyByCpGDensity.cpg_density, accuracyByCpGDensity.Accuracy, color = colors[1])
+        plt.plot(accuracyByCpGDensity.bin_midpoint, accuracyByCpGDensity.Accuracy, color = colors[1])
         plt.ylim(0,1)
         plt.ylabel("Accuracy")
         plt.xlabel("CpG Density in Read")
         plt.title("Read Level Prediction Accuracy by CpG Density in Read")
         plt.savefig(outPath + "/ReadLevelPredictionAccuracyByCpGDensity.png", bbox_inches = "tight")
         # plot by density of methylation sites in the read and cell type
-        accuracyByCellTypeCpGDensity = results.groupby(["sample_type", "cpg_density ", "correct_prediction"]).size().unstack(fill_value = 0)
+        accuracyByCellTypeCpGDensity = results.groupby(["sample_type", "cpg_density_bin", "correct_prediction"]).size().unstack(fill_value = 0)
         accuracyByCellTypeCpGDensity["Accuracy"] = accuracyByCellTypeCpGDensity.Correct / (accuracyByCellTypeCpGDensity.Correct + accuracyByCellTypeCpGDensity.Incorrect)
         accuracyByCellTypeCpGDensity = accuracyByCellTypeCpGDensity.reset_index()
         # only plot for density bins with at least 10 reads tested
@@ -151,7 +157,7 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         plt.figure(figsize = (8,6))
         for i, cellType in enumerate(accuracyByCellTypeCpGDensity.sample_type.unique()):    
             subset = accuracyByCellTypeCpGDensity[accuracyByCellTypeCpGDensity.sample_type == cellType]
-            plt.plot(subset.cpg_density, subset.Accuracy, label = cellType, color = colors[i])
+            plt.plot(subset.bin_midpoint, subset.Accuracy, label = cellType, color = colors[i])
         plt.legend()
         plt.ylim(0,1)
         plt.ylabel("Accuracy")
