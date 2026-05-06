@@ -85,7 +85,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         for i, cellType in enumerate(accuracyByCellTypeCpGs.sample_type.unique()):
             subset = accuracyByCellTypeCpGs[accuracyByCellTypeCpGs.sample_type == cellType]
             plt.plot(subset.nCpG, subset.Accuracy, label = cellType, color = colors[i])
-        plt.legend(loc="lower center", bbox_to_anchor=(0.5, -0.2), ncol=2)
+        plt.legend(loc="lower center", bbox_to_anchor=(0.5, -0.2), ncol=3)
+        plt.subplots_adjust(bottom=0.25)
         plt.ylabel("Accuracy")
         plt.xlabel("Number of CpGs")
         plt.savefig(outPath + "/ReadLevelPredictionAccuracyByCellTypeAndCpGs.png", bbox_inches = "tight")
@@ -115,7 +116,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         for i, cellType in enumerate(accuracyByCellTypeReadLength.sample_type.unique()):    
             subset = accuracyByCellTypeReadLength[accuracyByCellTypeReadLength.sample_type == cellType]
             plt.plot(subset.bin_midpoint, subset.Accuracy, label = cellType, color = colors[i])
-        plt.legend(loc="lower center", bbox_to_anchor=(0.5, -0.2), ncol=2)
+        plt.legend(loc="lower center", bbox_to_anchor=(0.5, -0.2), ncol=3)
+        plt.subplots_adjust(bottom=0.25)
         plt.xticks(rotation = 45)
         plt.ylabel("Accuracy")
         plt.xlabel("Read Length")
@@ -149,7 +151,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         for i, cellType in enumerate(accuracyByCellTypeCpGDensity.sample_type.unique()):    
             subset = accuracyByCellTypeCpGDensity[accuracyByCellTypeCpGDensity.sample_type == cellType]
             plt.plot(subset.bin_midpoint, subset.Accuracy, label = cellType, color = colors[i])
-        plt.legend(loc="lower center", bbox_to_anchor=(0.5, -0.2), ncol=2)
+        plt.legend(loc="lower center", bbox_to_anchor=(0.5, -0.2), ncol=3)
+        plt.subplots_adjust(bottom=0.25)
         plt.ylabel("Accuracy")
         plt.xlabel("CpG Density")
         plt.savefig(outPath + "/ReadLevelPredictionAccuracyByCellTypeAndCpGDensity.png", bbox_inches = "tight") 
