@@ -7,8 +7,6 @@ import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
-from pandas.api.types import CategoricalDtype
 
 plt.rcParams.update({'font.size': 12})
 
