@@ -1,4 +1,4 @@
-# First argument is the path to the read level results file (output of mergeONTTestingResults.py)
+# First argument is the path to folder with read level results file (output of mergeONTTestingResults.py) organisined in subfolders by prediction model and then ML algorithm
 # Second argument is the path to the read metadata file (e.g. read length, number of CpGs, etc.)
 
 # load libraries
@@ -65,7 +65,6 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         plt.ylim(0,1)
         plt.ylabel("Accuracy")
         plt.xlabel("True Cell Type")
-        plt.title("Read Level Prediction Accuracy by Cell Type")
         plt.savefig(outPath + "/ReadLevelPredictionAccuracyByCellType.png", bbox_inches = "tight")
         # plot accuracy as a function of number of cpgs in the read
         accuracyByCpGs = results.groupby(["nCpG", "correct_prediction"]).size().unstack(fill_value = 0)
@@ -75,10 +74,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         accuracyByCpGs = accuracyByCpGs[accuracyByCpGs.Correct + accuracyByCpGs.Incorrect >= 100]
         plt.figure(figsize = (6,4))
         plt.plot(accuracyByCpGs.nCpG, accuracyByCpGs.Accuracy, color = colors[1])
-        plt.ylim(0,1)
         plt.ylabel("Accuracy")
-        plt.xlabel("Number of CpGs in Read")
-        plt.title("Read Level Prediction Accuracy by Number of CpGs in Read")
+        plt.xlabel("Number of CpGs")
         plt.savefig(outPath + "/ReadLevelPredictionAccuracyByCpGs.png", bbox_inches = "tight")
         # plot accuracy as a function of cell type and number of cpgs in the read
         accuracyByCellTypeCpGs = results.groupby(["sample_type", "nCpG", "correct_prediction"]).size().unstack(fill_value = 0)
@@ -86,14 +83,13 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         accuracyByCellTypeCpGs = accuracyByCellTypeCpGs.reset_index()
         # only plot for CpG counts with at least 100 reads tested
         accuracyByCellTypeCpGs = accuracyByCellTypeCpGs[accuracyByCellTypeCpGs.Correct + accuracyByCellTypeCpGs.Incorrect >= 100]
-        plt.figure(figsize = (8,6))
+        plt.figure(figsize = (6,4))
         for i, cellType in enumerate(accuracyByCellTypeCpGs.sample_type.unique()):
             subset = accuracyByCellTypeCpGs[accuracyByCellTypeCpGs.sample_type == cellType]
             plt.plot(subset.nCpG, subset.Accuracy, label = cellType, color = colors[i])
         plt.legend()
         plt.ylabel("Accuracy")
-        plt.xlabel("Number of CpGs in Read")
-        plt.title("Read Level Prediction Accuracy by Cell Type and Number of CpGs in Read")
+        plt.xlabel("Number of CpGs")
         plt.savefig(outPath + "/ReadLevelPredictionAccuracyByCellTypeAndCpGs.png", bbox_inches = "tight")
         # plot by read length
         accuracyByReadLength = results.groupby(["read_length_bin", "correct_prediction"]).size().unstack(fill_value = 0)
@@ -106,10 +102,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         plt.figure(figsize = (6,4))
         plt.plot(accuracyByReadLength.bin_midpoint, accuracyByReadLength.Accuracy, color = colors[2])
         plt.xticks(rotation = 45)
-        plt.ylim(0,1)
         plt.ylabel("Accuracy")
         plt.xlabel("Read Length Bin")
-        plt.title("Read Level Prediction Accuracy by Read Length")
         plt.savefig(outPath + "/ReadLevelPredictionAccuracyByReadLength.png", bbox_inches = "tight")
         # plot by read length and cell type
         accuracyByCellTypeReadLength = results.groupby(["sample_type", "read_length_bin", "correct_prediction"]).size().unstack(fill_value = 0)
@@ -119,16 +113,14 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         accuracyByCellTypeReadLength = accuracyByCellTypeReadLength.reset_index()
         # only plot for read length bins with at least 100 reads tested
         accuracyByCellTypeReadLength = accuracyByCellTypeReadLength[accuracyByCellTypeReadLength.Correct + accuracyByCellTypeReadLength.Incorrect >= 100]
-        plt.figure(figsize = (8,6))
+        plt.figure(figsize = (6,4))
         for i, cellType in enumerate(accuracyByCellTypeReadLength.sample_type.unique()):    
             subset = accuracyByCellTypeReadLength[accuracyByCellTypeReadLength.sample_type == cellType]
             plt.plot(subset.bin_midpoint, subset.Accuracy, label = cellType, color = colors[i])
         plt.legend()
         plt.xticks(rotation = 45)
-        plt.ylim(0,1)
         plt.ylabel("Accuracy")
-        plt.xlabel("Read Length Bin")
-        plt.title("Read Level Prediction Accuracy by Cell Type and Read Length")
+        plt.xlabel("Read Length")
         plt.savefig(outPath + "/ReadLevelPredictionAccuracyByCellTypeAndReadLength.png", bbox_inches = "tight")
         # plot by density of methylation sites in the read
         # calculate density of methylation sites in the read
@@ -144,10 +136,8 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         accuracyByCpGDensity = accuracyByCpGDensity[accuracyByCpGDensity.Correct + accuracyByCpGDensity.Incorrect >= 100]
         plt.figure(figsize = (6,4))
         plt.plot(accuracyByCpGDensity.bin_midpoint, accuracyByCpGDensity.Accuracy, color = colors[1])
-        plt.ylim(0,1)
         plt.ylabel("Accuracy")
-        plt.xlabel("CpG Density in Read")
-        plt.title("Read Level Prediction Accuracy by CpG Density in Read")
+        plt.xlabel("CpG Density")
         plt.savefig(outPath + "/ReadLevelPredictionAccuracyByCpGDensity.png", bbox_inches = "tight")
         # plot by density of methylation sites in the read and cell type
         accuracyByCellTypeCpGDensity = results.groupby(["sample_type", "cpg_density_bin", "correct_prediction"]).size().unstack(fill_value = 0)
@@ -157,13 +147,11 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         accuracyByCellTypeCpGDensity = accuracyByCellTypeCpGDensity.reset_index()
         # only plot for density bins with at least 100 reads tested
         accuracyByCellTypeCpGDensity = accuracyByCellTypeCpGDensity[accuracyByCellTypeCpGDensity.Correct + accuracyByCellTypeCpGDensity.Incorrect >= 100]
-        plt.figure(figsize = (8,6))
+        plt.figure(figsize = (6,4))
         for i, cellType in enumerate(accuracyByCellTypeCpGDensity.sample_type.unique()):    
             subset = accuracyByCellTypeCpGDensity[accuracyByCellTypeCpGDensity.sample_type == cellType]
             plt.plot(subset.bin_midpoint, subset.Accuracy, label = cellType, color = colors[i])
         plt.legend()
-        plt.ylim(0,1)
         plt.ylabel("Accuracy")
-        plt.xlabel("CpG Density in Read")
-        plt.title("Read Level Prediction Accuracy by Cell Type and CpG Density in Read")
+        plt.xlabel("CpG Density")
         plt.savefig(outPath + "/ReadLevelPredictionAccuracyByCellTypeAndCpGDensity.png", bbox_inches = "tight") 
