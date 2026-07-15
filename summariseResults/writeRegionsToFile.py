@@ -22,7 +22,7 @@ chrFiles = list(filter(lambda x:'_Chr'+chr+'_' in x, allFiles))
 
 allDat = {}
 modelOpts = ["KNN", "NBayes", "RandFor", "SVM"]
-thresholdOpts = [round(x,2) for x in list(pd.np.arange(minThreshold,1.0,thresholdInc))]
+thresholdOpts = [round(x,2) for x in list(np.arange(minThreshold,1.0,thresholdInc))]
 modelMissing = []
 for modelType in modelOpts:
     subFiles = list(filter(lambda x:modelType in x, chrFiles))
