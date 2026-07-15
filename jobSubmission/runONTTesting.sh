@@ -11,6 +11,7 @@
 #SBATCH --job-name=testONTData-%A_%a.e
 #SBATCH --array=1-22
 
+# Assumes github repository folder is in $HOME directory
 
 ## submits job for each chromosome
 CHR=${SLURM_ARRAY_TASK_ID}
@@ -66,24 +67,22 @@ echo -e "==============================\n"
 python3.9 summariseResults/writeRegionsToFile.py ${RESULTSPATH} ${CHR} ${NCT}
 
 
-
-
 # loop through model types and predict cell types for all reads in all regions that passed the threshold for one chromosome and one model type
 for MLTYPE in KNN SVM NBayes; do
     TESTREADPATH=${OUTDIR}/${MODELNAME}/${MLTYPE}/
- 
-	REGIONS=${RESULTSPATH}MergedPredictiveRegionsThreshold0.95Model${MLTYPE}Chr${CHR}.csv
 	echo -e "\n=============================="
 	echo -e "  STARTING TESTING FOR ${MLTYPE} MODEL"
 	echo -e "==============================\n"
+	for REGIONS in ${RESULTSPATH}MergedPredictiveRegionsThreshold*Model${MLTYPE}Chr${CHR}.csv; do
 
-	# Extract read level ONT data for one bam file all regions for one regions file (i.e. one ML algorithm for one chr)
-	formatFiles/formatONTData.sh ${MODKITPATH} ${BAMPATH} ${OUTDIR} ${REGIONS}
+		# Extract read level ONT data for one bam file all regions for one regions file (i.e. one ML algorithm for one chr)
+		formatFiles/formatONTData.sh ${MODKITPATH} ${BAMPATH} ${OUTDIR} ${REGIONS}
 
-	# train and test these regions
-	# predicts all reads for one region for one model type
-	find "$TESTREADPATH" -maxdepth 1 -name "*chr$CHR:*.tsv" | while read -r testFile; do
-		python3.9 testCellTypeClassifierONTData.py "$TRAINPATH" "$testFile" "$CTCOL" "$NOBS"
+		# train and test these regions
+		# predicts all reads for one region for one model type
+		find "$TESTREADPATH" -maxdepth 1 -name "*chr$CHR:*.tsv" | while read -r testFile; do
+			python3.9 testCellTypeClassifierONTData.py "$TRAINPATH" "$testFile" "$CTCOL" "$NOBS"
+		done
 	done
 done
 
