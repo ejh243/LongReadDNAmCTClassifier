@@ -8,7 +8,7 @@ OUTDIR=$3
 REGIONS=$4
 
 # create output filename: needs to include region information, model type, model prediction output, sample info
-sample=$(basename ${BAMPATH} .bam)
+sample=$(basename ${BAMPATH%.bam})
 dir=$(dirname "$REGIONS")
 predictCT=$(basename "$dir")
 regionInfo=$(basename "$REGIONS")
