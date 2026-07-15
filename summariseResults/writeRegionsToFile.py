@@ -5,6 +5,7 @@ import sys
 import utils
 import pandas as pd
 import pyranges as pr
+import numpy as np
 
 ## process command line information
 resultsPath = sys.argv[1]
