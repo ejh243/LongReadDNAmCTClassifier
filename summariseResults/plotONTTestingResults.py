@@ -28,7 +28,7 @@ for mlModel in ["SVM", "KNN", "NBayes"]:
         if not os.path.exists(outPath):
             os.makedirs(outPath)
         # load read level results
-        results = pd.read_csv(resultsPath + "/" + cellPredict + "/" + mlModel + "/PredictionOutput/mergedModelPredictions.csv", header = 0, names = ("sample_type","sampleID","region","nCpG","read_id","predicted_cell_type","probability_cell_type"))
+        results = pd.read_csv(resultsPath + "/" + cellPredict + "/" + mlModel + "/PredictionOutput/mergedModelPredictions.csv", header = 0, names = ("sampleID","region","nCpG","read_id","predicted_cell_type","probability_cell_type"))
         # need to classify if predictions are correct or not; depends on which models we are testing
         # testing with Lymphocytes
         if cellPredict == "Lymphocytes":
