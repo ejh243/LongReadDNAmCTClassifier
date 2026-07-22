@@ -28,25 +28,22 @@ for f in *_modelPredictions.csv; do
   fi
 
   base=${f%_modelPredictions.csv}   # B_1_chr1:...
-sample=${base%%_chr*}             # B_1
-sample_type=${sample%%_*}         # B
-sampleID=${sample#*_}             # 1
+  sample=${base%%_chr*}             # B_1           # 1
 
   region=${base##*_chr}
   region="chr${region}"
 
-
   if [ $first -eq 1 ]; then
-    awk -v st="$sample_type" -v sid="$sampleID" -v r="$region" 'BEGIN{OFS=","}
-      NR==1 {print "sample_type","sampleID","region",$0}
-      NR>1  {print st,sid,r,$0}
-    ' "$f" > "$out"
+    awk -v  sid="$sample" -v r="$region" 'BEGIN{OFS=","}
+      NR==1 {print "sampleID","region",$0}
+      NR>1  {print sid,r,$0}
+    ' "$f" > mergedModelPredictions.csv
     first=0
   else
-    awk -v st="$sample_type" -v sid="$sampleID" -v r="$region" 'BEGIN{OFS=","}
-      NR>1 {print st,sid,r,$0}
-    ' "$f" >> "$out"
+    awk -v  sid="$sample" -v r="$region" 'BEGIN{OFS=","}
+      NR>1 {print sid,r,$0}
+    ' "$f" >> mergedModelPredictions.csv
   fi
 done
 
-echo "Merged predictions saved to: $out"
+echo "Merged predictions saved to: mergedModelPredictions.csv"
