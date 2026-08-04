@@ -71,18 +71,29 @@ python3.9 summariseResults/writeRegionsToFile.py ${RESULTSPATH} ${CHR} ${NCT}
 for MLTYPE in KNN SVM NBayes; do
     TESTREADPATH=${OUTDIR}/${MODELNAME}/${MLTYPE}/
 	echo -e "\n=============================="
-	echo -e "  STARTING TESTING FOR ${MLTYPE} MODEL"
+	echo -e "  PREPARING TESTING FOR ${MLTYPE} MODEL"
 	echo -e "==============================\n"
-	for REGIONS in ${RESULTSPATH}MergedPredictiveRegionsThreshold*Model${MLTYPE}Chr${CHR}.csv; do
+	# only need to run this for the most permissive threshold, as the regions for the other thresholds are subsets of this one.
+	LOWEST_THRESHOLD=$(
+    for f in ${RESULTSPATH}MergedPredictiveRegionsThreshold*Model${MLTYPE}Chr*.csv; do
+        thres=${f##*MergedPredictiveRegionsThreshold}
+        thres=${thres%%Model${MLTYPE}Chr*}
+        echo "$thres"
+		done | sort -g | uniq | head -n1
+	)
 
-		# Extract read level ONT data for one bam file all regions for one regions file (i.e. one ML algorithm for one chr)
-		formatFiles/formatONTData.sh ${MODKITPATH} ${BAMPATH} ${OUTDIR} ${REGIONS}
-
-		# train and test these regions
-		# predicts all reads for one region for one model type
-		find "$TESTREADPATH" -maxdepth 1 -name "*chr$CHR:*.tsv" | while read -r testFile; do
-			python3.9 testCellTypeClassifierONTData.py "$TRAINPATH" "$testFile" "$CTCOL" "$NOBS"
-		done
+	echo "Most permissive threshold for ${MLTYPE}: ${LOWEST_THRESHOLD}"
+	REGIONS=${RESULTSPATH}MergedPredictiveRegionsThreshold${LOWEST_THRESHOLD}Model${MLTYPE}Chr${CHR}.csv
+	# Extract read level ONT data for one bam file all regions for one regions file (i.e. one ML algorithm for one chr)
+	formatFiles/formatONTData.sh ${MODKITPATH} ${BAMPATH} ${OUTDIR} ${REGIONS}
+	
+	echo -e "\n=============================="
+	echo -e "  RUNNING TESTING FOR ${MLTYPE} MODEL"
+	echo -e "==============================\n"
+	# train and test these regions
+	# predicts all reads for one region for one model type
+	find "$TESTREADPATH" -maxdepth 1 -name "*chr$CHR:*.tsv" | while read -r testFile; do
+		python3.9 testCellTypeClassifierONTData.py "$TRAINPATH" "$testFile" "$CTCOL" "$NOBS"
 	done
 done
 
